@@ -1,0 +1,21 @@
+spring:
+  application:
+    name: nbot
+  ai:
+    google:
+      genai:
+        api-key: ${GEMINI_API_KEY:}
+
+nbot:
+  security:
+    allowed-users: ${ALLOWED_USERS:}
+    telegram-bot-token: ${TELEGRAM_BOT_TOKEN:}
+
+  qbittorrent:
+    url: ${QBITTORRENT_URL:http://localhost:8080}
+    username: ${QBITTORRENT_USERNAME:admin}
+    password: ${QBITTORRENT_PASSWORD:adminadmin}
+
+logging:
+  level:
+      dev.naguiar: DEBUG
