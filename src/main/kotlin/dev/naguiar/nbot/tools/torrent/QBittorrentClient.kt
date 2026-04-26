@@ -5,6 +5,7 @@ import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Service
 import org.springframework.util.LinkedMultiValueMap
+import org.springframework.util.MultiValueMap
 import org.springframework.web.client.RestClient
 
 @Service
@@ -41,13 +42,8 @@ class QBittorrentClient(
         }
     }
 
-    fun addMagnetLink(urls: String): Boolean {
+    private fun sendTorrentAddRequest(body: MultiValueMap<String, Any>, contentType: MediaType): Boolean {
         if (authCookie == null) login()
-
-        val body =
-            LinkedMultiValueMap<String, String>().apply {
-                add("urls", urls)
-            }
 
         return try {
             val response =
@@ -55,61 +51,46 @@ class QBittorrentClient(
                     .post()
                     .uri("/api/v2/torrents/add")
                     .header(HttpHeaders.COOKIE, authCookie)
-                    .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                    .contentType(contentType)
                     .body(body)
                     .retrieve()
                     .toBodilessEntity()
 
             response.statusCode.is2xxSuccessful
         } catch (e: Exception) {
-            log.warn("Failed to add magnet link, attempting re-login", e)
-            login()
-            val retryResponse =
-                restClient
-                    .post()
-                    .uri("/api/v2/torrents/add")
-                    .header(HttpHeaders.COOKIE, authCookie)
-                    .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-                    .body(body)
-                    .retrieve()
-                    .toBodilessEntity()
-            retryResponse.statusCode.is2xxSuccessful
+            log.warn("Failed to add torrent, attempting re-login", e)
+            try {
+                login()
+                val retryResponse =
+                    restClient
+                        .post()
+                        .uri("/api/v2/torrents/add")
+                        .header(HttpHeaders.COOKIE, authCookie)
+                        .contentType(contentType)
+                        .body(body)
+                        .retrieve()
+                        .toBodilessEntity()
+                retryResponse.statusCode.is2xxSuccessful
+            } catch (retryException: Exception) {
+                log.error("Failed to add torrent after retry", retryException)
+                false
+            }
         }
     }
 
-    fun addTorrentFile(file: java.io.File): Boolean {
-        if (authCookie == null) login()
+    fun addMagnetLink(urls: String): Boolean {
+        val body =
+            LinkedMultiValueMap<String, Any>().apply {
+                add("urls", urls)
+            }
+        return sendTorrentAddRequest(body, MediaType.APPLICATION_FORM_URLENCODED)
+    }
 
+    fun addTorrentFile(file: java.io.File): Boolean {
         val body =
             LinkedMultiValueMap<String, Any>().apply {
                 add("torrents", org.springframework.core.io.FileSystemResource(file))
             }
-
-        return try {
-            val response =
-                restClient
-                    .post()
-                    .uri("/api/v2/torrents/add")
-                    .header(HttpHeaders.COOKIE, authCookie)
-                    .contentType(MediaType.MULTIPART_FORM_DATA)
-                    .body(body)
-                    .retrieve()
-                    .toBodilessEntity()
-
-            response.statusCode.is2xxSuccessful
-        } catch (e: Exception) {
-            log.warn("Failed to add torrent file, attempting re-login", e)
-            login()
-            val retryResponse =
-                restClient
-                    .post()
-                    .uri("/api/v2/torrents/add")
-                    .header(HttpHeaders.COOKIE, authCookie)
-                    .contentType(MediaType.MULTIPART_FORM_DATA)
-                    .body(body)
-                    .retrieve()
-                    .toBodilessEntity()
-            retryResponse.statusCode.is2xxSuccessful
-        }
+        return sendTorrentAddRequest(body, MediaType.MULTIPART_FORM_DATA)
     }
 }
