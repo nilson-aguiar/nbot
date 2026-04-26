@@ -1,11 +1,11 @@
 package dev.naguiar.nbot
 
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.test.context.ActiveProfiles
 
 @SpringBootTest
-@Disabled("Temporarily disabled, until app is ready for version 1")
+@ActiveProfiles("ollama")
 class NbotApplicationTests {
     @Test
     fun contextLoads() {
