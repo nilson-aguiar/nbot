@@ -1,0 +1,17 @@
+<div th:fragment="metrics" class="space-y-4">
+    <div>
+        <div class="flex justify-between text-sm mb-1">
+            <span>Processing Load</span>
+            <span th:text="${metrics.cpuLoad} + '%'">4%</span>
+        </div>
+        <div class="w-full bg-gray-700 h-2 rounded-full overflow-hidden">
+            <div class="bg-green-500 h-full" th:style="'width: ' + ${metrics.cpuLoad} + '%'"></div>
+        </div>
+    </div>
+    <div>
+        <div class="flex justify-between text-sm">
+            <span>Gemini Latency</span>
+            <span th:text="${metrics.latencyMs} + 'ms'" class="text-blue-400 font-mono">342ms</span>
+        </div>
+    </div>
+</div>
