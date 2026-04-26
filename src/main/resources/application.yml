@@ -1,8 +1,18 @@
 spring:
   application:
     name: nbot
-  profiles:
-    active: gemini
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/nbot}
+    username: ${SPRING_DATASOURCE_USERNAME:nbot}
+    password: ${SPRING_DATASOURCE_PASSWORD:nbot_password}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
 
 nbot:
   security:
@@ -48,20 +58,3 @@ spring:
         options:
           model: llama3.1
       base-url: ${OLLAMA_BASE_URL:http://localhost:11434}
-
----
-spring:
-  config:
-    activate:
-      on-profile: docker
-  datasource:
-    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/nbot}
-    username: ${SPRING_DATASOURCE_USERNAME:nbot}
-    password: ${SPRING_DATASOURCE_PASSWORD:nbot_password}
-    driver-class-name: org.postgresql.Driver
-  jpa:
-    hibernate:
-      ddl-auto: update
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.PostgreSQLDialect
