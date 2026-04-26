@@ -43,3 +43,4 @@ out/
 *.log
 .env
 .worktrees/
+.docker_data/
