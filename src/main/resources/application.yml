@@ -1,16 +1,13 @@
 spring:
   application:
     name: nbot
-  ai:
-    google:
-      genai:
-        api-key: ${GEMINI_API_KEY:}
+  profiles:
+    active: gemini
 
 nbot:
   security:
     allowed-users: ${ALLOWED_USERS:}
     telegram-bot-token: ${TELEGRAM_BOT_TOKEN:}
-
   qbittorrent:
     url: ${QBITTORRENT_URL:http://localhost:8080}
     username: ${QBITTORRENT_USERNAME:admin}
@@ -19,3 +16,35 @@ nbot:
 logging:
   level:
       dev.naguiar: DEBUG
+
+---
+spring:
+  config:
+    activate:
+      on-profile: gemini
+  ai:
+    ollama:
+      chat:
+        enabled: false
+    google:
+      genai:
+        chat:
+          enabled: true
+        api-key: ${GEMINI_API_KEY:}
+
+---
+spring:
+  config:
+    activate:
+      on-profile: ollama
+  ai:
+    google:
+      genai:
+        chat:
+          enabled: false
+    ollama:
+      chat:
+        enabled: true
+        options:
+          model: llama3.1
+      base-url: ${OLLAMA_BASE_URL:http://localhost:11434}

@@ -1,4 +1,4 @@
-package dev.naguiar.nbot
+package dev.naguiar.nbot.infrastructure.config
 
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.context.annotation.Configuration
