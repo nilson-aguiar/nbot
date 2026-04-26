@@ -5,5 +5,15 @@
     "group:allNonMajor"
   ],
   "dependencyDashboard": true,
-  "labels": ["dependencies"]
+  "labels": ["dependencies"],
+  "packageRules": [
+    {
+      "matchPackagePrefixes": [
+        "org.springframework.boot",
+        "org.springframework.cloud",
+        "org.springframework.ai"
+      ],
+      "groupName": "Spring dependencies"
+    }
+  ]
 }
