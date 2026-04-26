@@ -8,12 +8,12 @@
   "labels": ["dependencies"],
   "packageRules": [
     {
-      "groupName": "Spring dependencies",
-      "matchPackageNames": [
-        "org.springframework.boot{/,}**",
-        "org.springframework.cloud{/,}**",
-        "org.springframework.ai{/,}**"
-      ]
+      "matchPackagePrefixes": [
+        "org.springframework.boot",
+        "org.springframework.cloud",
+        "org.springframework.ai"
+      ],
+      "groupName": "Spring dependencies"
     }
   ]
 }
