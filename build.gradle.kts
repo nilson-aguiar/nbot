@@ -21,7 +21,7 @@ repositories {
 }
 
 extra["springAiVersion"] = "1.1.4"
-extra["springCloudVersion"] = "2025.1.1"
+extra["springCloudVersion"] = "2025.0.2"
 
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter-actuator")
