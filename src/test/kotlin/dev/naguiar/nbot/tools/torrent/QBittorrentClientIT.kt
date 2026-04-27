@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.autoconfigure.web.client.RestClientAutoConfiguration
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.core.io.ClassPathResource
 import org.springframework.test.context.DynamicPropertyRegistry
 import org.springframework.test.context.DynamicPropertySource
 import org.testcontainers.containers.GenericContainer
@@ -16,7 +17,6 @@ import org.testcontainers.containers.wait.strategy.Wait
 import org.testcontainers.junit.jupiter.Container
 import org.testcontainers.junit.jupiter.Testcontainers
 import org.testcontainers.utility.MountableFile
-import java.io.File
 
 @SpringBootTest(classes = [QBittorrentClient::class, QBittorrentConfig::class, RestClientAutoConfiguration::class])
 @EnableConfigurationProperties(QBittorrentProperties::class)
@@ -43,7 +43,6 @@ class QBittorrentClientIT {
                 )
             }
             .withEnv("WEBUI_PORT", "8080")
-//            .withEnv("QBT_LEGAL_NOTICE", "confirm")
             .withLogConsumer(Slf4jLogConsumer(log))
             .waitingFor(Wait.forListeningPort())
 
@@ -62,24 +61,32 @@ class QBittorrentClientIT {
     private lateinit var client: QBittorrentClient
 
     @Test
-    fun `addMagnetLink should return true on success`() {
+    fun `addMagnetLink should return true and be visible in info`() {
         val result = client.addMagnetLink("magnet:?xt=urn:btih:5c3c147665711f229d60dc602282d49799f30ad3&tr=https://ipleak.net/announce.php%3Fh%3D5c3c147665711f229d60dc602282d49799f30ad3&dn=ipleak.net+torrent+detection")
         assertThat(result).isTrue()
+
+        // Wait a bit for qBittorrent to process the addition
+        Thread.sleep(2000)
+
+        val torrents = client.getTorrentsInfo()
+        assertThat(torrents).anyMatch {
+            it["name"] == "ipleak.net torrent detection" ||
+                (it["hash"] as String).equals("5c3c147665711f229d60dc602282d49799f30ad3", ignoreCase = true)
+        }
     }
 
     @Test
-    fun `addTorrentFile should return true on success`() {
-        val tempFile = File.createTempFile("test", ".torrent")
-        // Minimal torrent file content might not be enough for qBittorrent to accept it,
-        // but the HTTP request should still be 2xx if the format is correct.
-        // However, qBittorrent might return 400 if it's not a valid bencoded torrent.
-        // For IT purposes, we'll use a dummy text but qBittorrent might reject it.
-        // Let's use a very basic but "valid-looking" multipart upload.
-        tempFile.writeText("d8:announce12:udp://test.com4:infod6:lengthi1024e4:name4:test12:piece lengthi256e6:pieces20:00000000000000000000ee")
+    fun `addTorrentFile should return true and be visible in info`() {
+        // Use the real test.torrent file provided by the user
+        val file = ClassPathResource("test.torrent").file
 
-        val result = client.addTorrentFile(tempFile)
+        val result = client.addTorrentFile(file)
         assertThat(result).isTrue()
 
-        tempFile.delete()
+        // Wait a bit for qBittorrent to process the addition
+        Thread.sleep(2000)
+
+        val torrents = client.getTorrentsInfo()
+        assertThat(torrents).isNotEmpty()
     }
 }
