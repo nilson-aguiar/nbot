@@ -15,16 +15,16 @@ class QBittorrentClient(
     private val log = LoggerFactory.getLogger(QBittorrentClient::class.java)
     private var authCookie: String? = null
 
+    val authCredentialsBody = multiValueMapOf(
+        "username" to properties.username,
+        "password" to properties.password
+    )
+
     private fun login() {
         log.info("Logging into qBittorrent at {}", properties.url)
 
-        val body = LinkedMultiValueMap<String, String>().apply {
-            add("username", properties.username)
-            add("password", properties.password)
-        }
-
         try {
-            val response = api.login(body)
+            val response = api.login(authCredentialsBody)
             val cookies = response.headers[HttpHeaders.SET_COOKIE]
             if (!cookies.isNullOrEmpty()) {
                 authCookie = cookies.find { it.startsWith("SID=") }?.substringBefore(";")
@@ -58,18 +58,16 @@ class QBittorrentClient(
 
     fun addMagnetLink(urls: String): Boolean {
         return executeWithRetry { cookie ->
-            val response = api.addMagnetLink(cookie, urls)
+            val body = multiValueMapOf("urls" to urls)
+            val response = api.addMagnetLink(cookie, body)
             response.statusCode.is2xxSuccessful
         }
     }
 
     fun addTorrentFile(file: File): Boolean {
         return executeWithRetry { cookie ->
-            val fileBytes = file.readBytes()
-            val resource = object : org.springframework.core.io.ByteArrayResource(fileBytes) {
-                override fun getFilename(): String = file.name
-            }
-            val response = api.addTorrentFile(cookie, resource)
+            val body = multiValueMapOf<String, Any>("torrents" to FileSystemResource(file))
+            val response = api.addTorrentFile(cookie, body)
             response.statusCode.is2xxSuccessful
         }
     }
@@ -91,6 +89,12 @@ class QBittorrentClient(
                 log.error("Failed to get torrents info after retry", retryException)
                 emptyList()
             }
+        }
+    }
+
+    private fun <K: Any, R: Any> multiValueMapOf(vararg pairs: Pair<K, R>): LinkedMultiValueMap<K, R> = LinkedMultiValueMap<K, R>().apply {
+        pairs.forEach {
+            add(it.first, it.second)
         }
     }
 }

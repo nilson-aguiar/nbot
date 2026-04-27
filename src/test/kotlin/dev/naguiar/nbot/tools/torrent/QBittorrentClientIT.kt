@@ -78,7 +78,7 @@ class QBittorrentClientIT {
     @Test
     fun `addTorrentFile should return true and be visible in info`() {
         // Use the real test.torrent file provided by the user
-        val file = ClassPathResource("test.torrent").file
+        val file = ClassPathResource("ubuntu-26.04-live-server-amd64.iso.torrent").file
 
         val result = client.addTorrentFile(file)
         assertThat(result).isTrue()

@@ -12,6 +12,7 @@ import org.telegram.telegrambots.meta.api.objects.Document
 import org.telegram.telegrambots.meta.api.objects.Message
 import org.telegram.telegrambots.meta.api.objects.Update
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException
+import java.io.File
 
 @Component
 class NbotTelegramObserver(
@@ -58,11 +59,13 @@ class NbotTelegramObserver(
         try {
             val getFile = GetFile()
             getFile.fileId = document.fileId
+            val tempFile = File.createTempFile("${document.fileName}", ".torrent")
             val telegramFile = execute(getFile)
             val downloadedFile = downloadFile(telegramFile)
+            downloadedFile.renameTo(tempFile)
 
             // Call the tool directly to bypass AI safety filters
-            val responseText = torrentTools.addTorrentFile(downloadedFile.absolutePath)
+            val responseText = torrentTools.addTorrentFile(tempFile.absolutePath)
             sendReply(message.chatId, responseText)
         } catch (e: Exception) {
             log.error("Failed to process document", e)
