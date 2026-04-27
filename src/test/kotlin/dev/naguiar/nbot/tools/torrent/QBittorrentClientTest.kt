@@ -11,6 +11,7 @@ import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpMethod
 import org.springframework.http.MediaType
 import org.springframework.test.annotation.DirtiesContext
+import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.TestPropertySource
 import org.springframework.test.web.client.MockRestServiceServer
 import org.springframework.test.web.client.match.MockRestRequestMatchers.content
@@ -23,6 +24,7 @@ import org.springframework.test.web.client.response.MockRestResponseCreators.wit
 @RestClientTest(QBittorrentClient::class)
 @Import(QBittorrentConfig::class)
 @EnableConfigurationProperties(QBittorrentProperties::class)
+@ActiveProfiles("test")
 @TestPropertySource(
     properties = [
         "nbot.qbittorrent.url=http://localhost:8080",
@@ -52,7 +54,7 @@ class QBittorrentClientTest {
             .expect(requestTo("http://localhost:8080/api/v2/torrents/add"))
             .andExpect(method(HttpMethod.POST))
             .andExpect(header(HttpHeaders.COOKIE, "SID=12345"))
-            .andExpect(content().contentTypeCompatibleWith(MediaType.MULTIPART_FORM_DATA))
+            .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_FORM_URLENCODED))
             .andRespond(withSuccess())
 
         val result = client.addMagnetLink("magnet:?xt=urn:btih:fake")
