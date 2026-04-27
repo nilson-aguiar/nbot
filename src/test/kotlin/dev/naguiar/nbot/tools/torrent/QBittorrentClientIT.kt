@@ -22,29 +22,29 @@ import org.testcontainers.utility.MountableFile
 @EnableConfigurationProperties(QBittorrentProperties::class)
 @Testcontainers
 class QBittorrentClientIT {
-
     companion object {
         private val log = LoggerFactory.getLogger(QBittorrentClientIT::class.java)
 
         @Container
-        val qbittorrent = GenericContainer("ghcr.io/home-operations/qbittorrent:5.1.4")
-            .withExposedPorts(8080)
-            .withCopyFileToContainer(
-                MountableFile.forClasspathResource("qBittorrent.conf", 0x1FF),
-                "/config/qBittorrent.conf"
-            )
-            .withCreateContainerCmdModifier { cmd ->
-                cmd.withEntrypoint("sh", "-c",
-                    """
+        val qbittorrent =
+            GenericContainer("ghcr.io/home-operations/qbittorrent:5.1.4")
+                .withExposedPorts(8080)
+                .withCopyFileToContainer(
+                    MountableFile.forClasspathResource("qBittorrent.conf", 0x1FF),
+                    "/config/qBittorrent.conf",
+                ).withCreateContainerCmdModifier { cmd ->
+                    cmd.withEntrypoint(
+                        "sh",
+                        "-c",
+                        """
                         mkdir -p /config/qBittorrent && \
                         mv /config/qBittorrent.conf /config/qBittorrent/qBittorrent.conf && \
                         exec /usr/bin/catatonit -- /entrypoint.sh
-                    """.trimIndent()
-                )
-            }
-            .withEnv("WEBUI_PORT", "8080")
-            .withLogConsumer(Slf4jLogConsumer(log))
-            .waitingFor(Wait.forListeningPort())
+                        """.trimIndent(),
+                    )
+                }.withEnv("WEBUI_PORT", "8080")
+                .withLogConsumer(Slf4jLogConsumer(log))
+                .waitingFor(Wait.forListeningPort())
 
         @JvmStatic
         @DynamicPropertySource
@@ -62,7 +62,10 @@ class QBittorrentClientIT {
 
     @Test
     fun `addMagnetLink should return true and be visible in info`() {
-        val result = client.addMagnetLink("magnet:?xt=urn:btih:5c3c147665711f229d60dc602282d49799f30ad3&tr=https://ipleak.net/announce.php%3Fh%3D5c3c147665711f229d60dc602282d49799f30ad3&dn=ipleak.net+torrent+detection")
+        val result =
+            client.addMagnetLink(
+                "magnet:?xt=urn:btih:5c3c147665711f229d60dc602282d49799f30ad3&tr=https://ipleak.net/announce.php%3Fh%3D5c3c147665711f229d60dc602282d49799f30ad3&dn=ipleak.net+torrent+detection",
+            )
         assertThat(result).isTrue()
 
         // Wait a bit for qBittorrent to process the addition

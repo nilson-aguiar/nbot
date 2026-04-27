@@ -15,10 +15,11 @@ class QBittorrentClient(
     private val log = LoggerFactory.getLogger(QBittorrentClient::class.java)
     private var authCookie: String? = null
 
-    val authCredentialsBody = multiValueMapOf(
-        "username" to properties.username,
-        "password" to properties.password
-    )
+    val authCredentialsBody =
+        multiValueMapOf(
+            "username" to properties.username,
+            "password" to properties.password,
+        )
 
     private fun login() {
         log.info("Logging into qBittorrent at {}", properties.url)
@@ -56,21 +57,19 @@ class QBittorrentClient(
         }
     }
 
-    fun addMagnetLink(urls: String): Boolean {
-        return executeWithRetry { cookie ->
+    fun addMagnetLink(urls: String): Boolean =
+        executeWithRetry { cookie ->
             val body = multiValueMapOf("urls" to urls)
             val response = api.addMagnetLink(cookie, body)
             response.statusCode.is2xxSuccessful
         }
-    }
 
-    fun addTorrentFile(file: File): Boolean {
-        return executeWithRetry { cookie ->
+    fun addTorrentFile(file: File): Boolean =
+        executeWithRetry { cookie ->
             val body = multiValueMapOf<String, Any>("torrents" to FileSystemResource(file))
             val response = api.addTorrentFile(cookie, body)
             response.statusCode.is2xxSuccessful
         }
-    }
 
     fun getTorrentsInfo(): List<Map<String, Any>> {
         if (authCookie == null) login()
@@ -92,9 +91,10 @@ class QBittorrentClient(
         }
     }
 
-    private fun <K: Any, R: Any> multiValueMapOf(vararg pairs: Pair<K, R>): LinkedMultiValueMap<K, R> = LinkedMultiValueMap<K, R>().apply {
-        pairs.forEach {
-            add(it.first, it.second)
+    private fun <K : Any, R : Any> multiValueMapOf(vararg pairs: Pair<K, R>): LinkedMultiValueMap<K, R> =
+        LinkedMultiValueMap<K, R>().apply {
+            pairs.forEach {
+                add(it.first, it.second)
+            }
         }
-    }
 }

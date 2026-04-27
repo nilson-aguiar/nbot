@@ -46,7 +46,7 @@ class NbotTelegramObserver(
             }
         }
 
-        sendReply(message.chatId,"Default answer: I cannot handle your message.")
+        sendReply(message.chatId, "Default answer: I cannot handle your message.")
     }
 
     private fun processTorrentDocument(

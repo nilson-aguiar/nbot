@@ -4,7 +4,7 @@ import org.springframework.ai.chat.client.ChatClient
 import org.springframework.ai.chat.model.ChatModel
 import org.springframework.ai.tool.ToolCallback
 
-//@Service
+// @Service
 // Removed for now as there's no use case for now
 class ChatOrchestrator(
     chatModel: ChatModel,

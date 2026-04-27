@@ -16,28 +16,26 @@ import org.springframework.web.service.invoker.createClient
 
 @Configuration
 class QBittorrentConfig {
-
     @Bean
     @ConditionalOnProperty(name = ["nbot.qbittorrent.use-buffering"], havingValue = "true", matchIfMissing = true)
-    fun qBittorrentRequestFactory(): ClientHttpRequestFactory {
-        return BufferingClientHttpRequestFactory(JdkClientHttpRequestFactory())
-    }
+    fun qBittorrentRequestFactory(): ClientHttpRequestFactory = BufferingClientHttpRequestFactory(JdkClientHttpRequestFactory())
 
     @Bean
     fun qBittorrentApi(
         properties: QBittorrentProperties,
         builder: RestClient.Builder,
-        requestFactory: ClientHttpRequestFactory?
+        requestFactory: ClientHttpRequestFactory?,
     ): QBittorrentApi {
         // If a request factory bean exists (i.e., not in test), use it
         requestFactory?.let {
             builder.requestFactory(it)
         }
 
-        val qBittorrentRestClient = builder
-            .baseUrl(properties.url)
-            .defaultHeader(HttpHeaders.CONNECTION, "close")
-            .build()
+        val qBittorrentRestClient =
+            builder
+                .baseUrl(properties.url)
+                .defaultHeader(HttpHeaders.CONNECTION, "close")
+                .build()
 
         val adapter = RestClientAdapter.create(qBittorrentRestClient)
         val factory = HttpServiceProxyFactory.builderFor(adapter).build()

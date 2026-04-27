@@ -10,12 +10,10 @@ import org.telegram.telegrambots.updatesreceivers.DefaultBotSession
 @Configuration
 @ConditionalOnProperty(name = ["nbot.telegram.enabled"], havingValue = "true")
 class TelegramConfig {
-
     @Bean
     fun telegramBotsApi(bots: List<LongPollingBot>): TelegramBotsApi {
         val api = TelegramBotsApi(DefaultBotSession::class.java)
         bots.forEach { api.registerBot(it) }
         return api
     }
-
 }
