@@ -52,7 +52,7 @@ class QBittorrentClientTest {
             .expect(requestTo("http://localhost:8080/api/v2/torrents/add"))
             .andExpect(method(HttpMethod.POST))
             .andExpect(header(HttpHeaders.COOKIE, "SID=12345"))
-            .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_FORM_URLENCODED))
+            .andExpect(content().contentTypeCompatibleWith(MediaType.MULTIPART_FORM_DATA))
             .andRespond(withSuccess())
 
         val result = client.addMagnetLink("magnet:?xt=urn:btih:fake")
