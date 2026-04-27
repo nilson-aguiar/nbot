@@ -110,3 +110,40 @@ jobs:
         labels: ${{ steps.meta.outputs.labels }}
         cache-from: type=gha
         cache-to: type=gha,mode=max
+
+  helm:
+    needs: [build, release]
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v4
+
+      - name: Log in to GHCR
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | helm registry login ghcr.io --username ${{ github.actor }} --password-stdin
+
+      - name: Determine Version
+        id: version
+        run: |
+          if [ "${{ needs.release.outputs.release_created }}" = "true" ]; then
+            # Extract version from tag (e.g. v1.2.3 -> 1.2.3)
+            TAG="${{ needs.release.outputs.tag_name }}"
+            VERSION="${TAG#v}"
+            echo "version=$VERSION" >> $GITHUB_OUTPUT
+          else
+            # Unstable build
+            echo "version=0.0.0-unstable" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Package and Push Helm Chart
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          helm package charts/nbot --version "$VERSION" --app-version "$VERSION"
+          helm push nbot-"$VERSION".tgz oci://ghcr.io/${{ github.repository_owner }}
