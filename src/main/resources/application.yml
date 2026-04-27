@@ -1,17 +1,44 @@
 spring:
+  ai:
+    model:
+      chat: none
+    ollama:
+      chat:
+        enabled: false
+    google:
+      genai:
+        chat:
+          enabled: false
   application:
     name: nbot
-  profiles:
-    active: gemini
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/nbot}
+    username: ${SPRING_DATASOURCE_USERNAME:nbot}
+    password: ${SPRING_DATASOURCE_PASSWORD:nbot_password}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
 
 nbot:
-  security:
+  telegram:
+    enabled: true
     allowed-users: ${ALLOWED_USERS:}
     telegram-bot-token: ${TELEGRAM_BOT_TOKEN:}
   qbittorrent:
-    url: ${QBITTORRENT_URL:http://localhost:8080}
+    url: ${QBITTORRENT_URL:http://localhost:8090}
     username: ${QBITTORRENT_USERNAME:admin}
     password: ${QBITTORRENT_PASSWORD:adminadmin}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,env,configprops
 
 logging:
   level:
@@ -23,6 +50,8 @@ spring:
     activate:
       on-profile: gemini
   ai:
+    model:
+      chat: google-genai
     ollama:
       chat:
         enabled: false
@@ -38,6 +67,8 @@ spring:
     activate:
       on-profile: ollama
   ai:
+    model:
+      chat: ollama
     google:
       genai:
         chat:
@@ -46,5 +77,5 @@ spring:
       chat:
         enabled: true
         options:
-          model: llama3.1
+          model: gpt-oss:20b
       base-url: ${OLLAMA_BASE_URL:http://localhost:11434}

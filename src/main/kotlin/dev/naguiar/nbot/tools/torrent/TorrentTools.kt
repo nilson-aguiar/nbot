@@ -13,8 +13,8 @@ class TorrentTools(
     @Tool(
         description =
             """
-               Adds a torrent to qBittorrent using a magnet link. 
-               You MUST execute this tool when the user intends to download a torrent via magnet link.
+               Mandatory: Adds a torrent to qBittorrent using a magnet link. 
+               Use this when the user provides a magnet link or requests a download from a link.
             """,
     )
     fun addTorrentMagnet(magnetLink: String): String {
@@ -30,8 +30,8 @@ class TorrentTools(
     @Tool(
         description =
             """
-               Adds a .torrent file to qBittorrent using its file path. 
-               You MUST execute this tool when the user uploads a torrent file.
+               Mandatory: Adds a .torrent file to qBittorrent using its absolute file path. 
+               Use this when the user uploads or forwards a .torrent file.
             """,
     )
     fun addTorrentFile(filePath: String): String {
