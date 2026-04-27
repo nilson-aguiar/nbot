@@ -8,6 +8,7 @@ import org.springframework.util.MultiValueMap
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestHeader
 import org.springframework.web.bind.annotation.RequestPart
+import org.springframework.web.service.annotation.GetExchange
 import org.springframework.web.service.annotation.PostExchange
 
 interface QBittorrentApi {
@@ -25,4 +26,7 @@ interface QBittorrentApi {
         @RequestHeader(HttpHeaders.COOKIE) cookie: String,
         @RequestPart("torrents") file: Resource
     ): ResponseEntity<Void>
+
+    @GetExchange("/api/v2/torrents/info")
+    fun getTorrentsInfo(@RequestHeader(HttpHeaders.COOKIE) cookie: String): ResponseEntity<List<Map<String, Any>>>
 }

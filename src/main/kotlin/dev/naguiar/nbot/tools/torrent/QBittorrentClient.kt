@@ -70,4 +70,24 @@ class QBittorrentClient(
             response.statusCode.is2xxSuccessful
         }
     }
+
+    fun getTorrentsInfo(): List<Map<String, Any>> {
+        if (authCookie == null) login()
+        val cookie = authCookie ?: return emptyList()
+
+        return try {
+            val response = api.getTorrentsInfo(cookie)
+            response.body ?: emptyList()
+        } catch (e: Exception) {
+            log.warn("Failed to get torrents info, attempting re-login", e)
+            login()
+            val newCookie = authCookie ?: return emptyList()
+            try {
+                api.getTorrentsInfo(newCookie).body ?: emptyList()
+            } catch (retryException: Exception) {
+                log.error("Failed to get torrents info after retry", retryException)
+                emptyList()
+            }
+        }
+    }
 }
