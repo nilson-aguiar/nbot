@@ -65,7 +65,10 @@ class QBittorrentClient(
 
     fun addTorrentFile(file: File): Boolean {
         return executeWithRetry { cookie ->
-            val resource = FileSystemResource(file)
+            val fileBytes = file.readBytes()
+            val resource = object : org.springframework.core.io.ByteArrayResource(fileBytes) {
+                override fun getFilename(): String = file.name
+            }
             val response = api.addTorrentFile(cookie, resource)
             response.statusCode.is2xxSuccessful
         }
