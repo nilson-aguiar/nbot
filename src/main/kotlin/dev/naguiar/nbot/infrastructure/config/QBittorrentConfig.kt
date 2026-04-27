@@ -12,11 +12,12 @@ import org.springframework.web.service.invoker.HttpServiceProxyFactory
 @Configuration
 class QBittorrentConfig {
     @Bean
-    fun qBittorrentApi(builder: RestClient.Builder, properties: QBittorrentProperties): QBittorrentApi {
+    fun qBittorrentApi(properties: QBittorrentProperties): QBittorrentApi {
         val requestFactory = SimpleClientHttpRequestFactory().apply {
-            setBufferRequestBody(true) // Forces buffering to avoid chunked transfer encoding
+            @Suppress("DEPRECATION")
+            setBufferRequestBody(true)
         }
-        val client = builder
+        val client = RestClient.builder()
             .baseUrl(properties.url)
             .requestFactory(requestFactory)
             .build()
