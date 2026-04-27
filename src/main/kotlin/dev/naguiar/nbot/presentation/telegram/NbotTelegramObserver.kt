@@ -44,6 +44,7 @@ class NbotTelegramObserver(
             } else {
                 sendReply(message.chatId, "I only understand .torrent files at the moment.")
             }
+            return
         }
 
         sendReply(message.chatId, "Default answer: I cannot handle your message.")
