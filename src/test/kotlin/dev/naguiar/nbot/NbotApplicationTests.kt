@@ -13,7 +13,6 @@ import org.testcontainers.junit.jupiter.Testcontainers
 @ActiveProfiles("test")
 @Testcontainers
 class NbotApplicationTests {
-
     companion object {
         @Container
         val postgres = PostgreSQLContainer("postgres:17-alpine")
