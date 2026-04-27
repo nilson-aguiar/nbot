@@ -10,7 +10,7 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter
 @Controller
 class DashboardController(
     private val dataService: DashboardDataService,
-    private val logEmitterService: SseLogEmitterService
+    private val logEmitterService: SseLogEmitterService,
 ) {
     @GetMapping("/dashboard")
     fun dashboard(model: Model): String {

@@ -7,13 +7,20 @@ import org.springframework.stereotype.Service
 import java.lang.reflect.Method
 import kotlin.math.roundToInt
 
-data class ToolInfo(val name: String, val description: String)
-data class MetricsInfo(val cpuLoad: Int, val latencyMs: Int)
+data class ToolInfo(
+    val name: String,
+    val description: String,
+)
+
+data class MetricsInfo(
+    val cpuLoad: Int,
+    val latencyMs: Int,
+)
 
 @Service
 class DashboardDataService(
     private val ctx: ApplicationContext,
-    private val meterRegistry: MeterRegistry
+    private val meterRegistry: MeterRegistry,
 ) {
     fun getRegisteredTools(): List<ToolInfo> {
         val tools = mutableListOf<ToolInfo>()
@@ -38,7 +45,7 @@ class DashboardDataService(
         val cpu = meterRegistry.find("system.cpu.usage").gauge()?.value() ?: 0.0
         return MetricsInfo(
             cpuLoad = (cpu * 100).roundToInt(),
-            latencyMs = 342
+            latencyMs = 342,
         )
     }
 }

@@ -10,7 +10,9 @@ import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
 @Component
-class SseLogbackAppender : AppenderBase<ILoggingEvent>(), ApplicationContextAware {
+class SseLogbackAppender :
+    AppenderBase<ILoggingEvent>(),
+    ApplicationContextAware {
     private lateinit var ctx: ApplicationContext
     private val formatter = DateTimeFormatter.ofPattern("HH:mm:ss").withZone(ZoneId.systemDefault())
 
@@ -20,22 +22,23 @@ class SseLogbackAppender : AppenderBase<ILoggingEvent>(), ApplicationContextAwar
 
     override fun append(event: ILoggingEvent) {
         if (!::ctx.isInitialized) return
-        
+
         val emitterService = ctx.getBean(SseLogEmitterService::class.java)
         val time = formatter.format(Instant.ofEpochMilli(event.timeStamp))
         val level = event.level.toString()
-        val colorClass = when (level) {
-            "ERROR" -> "text-red-500"
-            "WARN" -> "text-yellow-500"
-            else -> "text-green-500"
-        }
-        
+        val colorClass =
+            when (level) {
+                "ERROR" -> "text-red-500"
+                "WARN" -> "text-yellow-500"
+                else -> "text-green-500"
+            }
+
         val html = """<div class="font-mono text-sm mb-1">
             <span class="text-gray-500">[$time]</span> 
             <span class="$colorClass">[$level]</span> 
             <span class="text-gray-300">${event.formattedMessage}</span>
         </div>"""
-        
+
         emitterService.broadcast(html)
     }
 }

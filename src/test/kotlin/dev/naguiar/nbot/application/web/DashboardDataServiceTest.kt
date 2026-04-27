@@ -18,25 +18,26 @@ class DashboardDataServiceTest {
     fun `should retrieve metrics`() {
         val gauge = mockk<Gauge>()
         every { gauge.value() } returns 0.05
-        
+
         val search = mockk<Search>()
         every { meterRegistry.find("system.cpu.usage") } returns search
         every { search.gauge() } returns gauge
-        
+
         val metrics = service.getMetrics()
-        
+
         assertEquals(5, metrics.cpuLoad)
         assertEquals(342, metrics.latencyMs)
     }
 
     @Test
     fun `should handle missing metrics`() {
-        every { meterRegistry.find(any()) } returns mockk {
-            every { gauge() } returns null
-        }
-        
+        every { meterRegistry.find(any()) } returns
+            mockk {
+                every { gauge() } returns null
+            }
+
         val metrics = service.getMetrics()
-        
+
         assertEquals(0, metrics.cpuLoad)
     }
 }

@@ -19,9 +19,15 @@ nbot:
     allowed-users: ${ALLOWED_USERS:}
     telegram-bot-token: ${TELEGRAM_BOT_TOKEN:}
   qbittorrent:
-    url: ${QBITTORRENT_URL:http://localhost:8080}
+    url: ${QBITTORRENT_URL:http://localhost:8090}
     username: ${QBITTORRENT_USERNAME:admin}
     password: ${QBITTORRENT_PASSWORD:adminadmin}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,env,configprops
 
 logging:
   level:
@@ -60,5 +66,5 @@ spring:
       chat:
         enabled: true
         options:
-          model: llama3.1
+          model: gpt-oss:20b
       base-url: ${OLLAMA_BASE_URL:http://localhost:11434}

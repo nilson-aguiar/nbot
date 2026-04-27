@@ -10,7 +10,6 @@ import org.junit.jupiter.api.extension.ExtendWith
 
 @ExtendWith(MockKExtension::class)
 class TorrentToolsTest {
-
     @MockK
     private lateinit var qBittorrentClient: QBittorrentClient
 
