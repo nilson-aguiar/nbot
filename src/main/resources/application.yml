@@ -1,4 +1,14 @@
 spring:
+  ai:
+    model:
+      chat: none
+    ollama:
+      chat:
+        enabled: false
+    google:
+      genai:
+        chat:
+          enabled: false
   application:
     name: nbot
   datasource:
@@ -15,7 +25,8 @@ spring:
 
 
 nbot:
-  security:
+  telegram:
+    enabled: true
     allowed-users: ${ALLOWED_USERS:}
     telegram-bot-token: ${TELEGRAM_BOT_TOKEN:}
   qbittorrent:

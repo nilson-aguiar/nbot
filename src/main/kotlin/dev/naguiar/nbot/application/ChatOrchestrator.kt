@@ -3,9 +3,9 @@ package dev.naguiar.nbot.application
 import org.springframework.ai.chat.client.ChatClient
 import org.springframework.ai.chat.model.ChatModel
 import org.springframework.ai.tool.ToolCallback
-import org.springframework.stereotype.Service
 
-@Service
+//@Service
+// Removed for now as there's no use case for now
 class ChatOrchestrator(
     chatModel: ChatModel,
     toolCallbacks: List<ToolCallback>,

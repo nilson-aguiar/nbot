@@ -30,6 +30,7 @@ import org.springframework.test.web.client.response.MockRestResponseCreators.wit
         "nbot.qbittorrent.url=http://localhost:8080",
         "nbot.qbittorrent.username=admin",
         "nbot.qbittorrent.password=adminadmin",
+        "nbot.qbittorrent.use-buffering=false", // Disable buffering in tests
     ],
 )
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)

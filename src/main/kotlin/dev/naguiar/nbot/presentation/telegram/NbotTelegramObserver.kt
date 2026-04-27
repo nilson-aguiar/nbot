@@ -1,7 +1,6 @@
 package dev.naguiar.nbot.presentation.telegram
 
-import dev.naguiar.nbot.application.ChatOrchestrator
-import dev.naguiar.nbot.infrastructure.config.SecurityProperties
+import dev.naguiar.nbot.infrastructure.config.TelegramProperties
 import dev.naguiar.nbot.tools.torrent.TorrentTools
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
@@ -16,10 +15,9 @@ import java.io.File
 
 @Component
 class NbotTelegramObserver(
-    private val securityProperties: SecurityProperties,
-    private val chatOrchestrator: ChatOrchestrator,
+    private val telegramProperties: TelegramProperties,
     private val torrentTools: TorrentTools,
-) : TelegramLongPollingBot(securityProperties.telegramBotToken) {
+) : TelegramLongPollingBot(telegramProperties.telegramBotToken) {
     private val log = LoggerFactory.getLogger(NbotTelegramObserver::class.java)
 
     override fun getBotUsername(): String = "naguiarBot"
@@ -34,15 +32,12 @@ class NbotTelegramObserver(
             return
         }
 
-        if (!securityProperties.allowedUsers.contains(userId)) {
+        if (!telegramProperties.allowedUsers.contains(userId)) {
             log.warn("Unauthorized access attempt from user ID: {}", userId)
             return
         }
 
-        if (message.hasText()) {
-            val responseText = chatOrchestrator.chat(message.text)
-            sendReply(message.chatId, responseText)
-        } else if (message.hasDocument()) {
+        if (message.hasDocument()) {
             val document = message.document
             if (document.fileName?.endsWith(".torrent", ignoreCase = true) == true) {
                 processTorrentDocument(document, message)
@@ -50,6 +45,8 @@ class NbotTelegramObserver(
                 sendReply(message.chatId, "I only understand .torrent files at the moment.")
             }
         }
+
+        sendReply(message.chatId,"Default answer: I cannot handle your message.")
     }
 
     private fun processTorrentDocument(

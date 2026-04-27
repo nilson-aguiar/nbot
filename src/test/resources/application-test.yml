@@ -1,0 +1,5 @@
+nbot:
+  telegram:
+    allowed-users: 1234
+    telegram-bot-token: abc
+    enabled: false
