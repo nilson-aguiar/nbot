@@ -20,8 +20,8 @@ repositories {
     mavenCentral()
 }
 
-extra["springAiVersion"] = "1.1.4"
-extra["springCloudVersion"] = "2025.0.2"
+extra["springAiVersion"] = "1.1.6"
+extra["springCloudVersion"] = "2025.1.1"
 
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter-actuator")
