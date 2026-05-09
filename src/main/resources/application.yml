@@ -33,6 +33,10 @@ nbot:
     url: ${QBITTORRENT_URL:http://localhost:8090}
     username: ${QBITTORRENT_USERNAME:admin}
     password: ${QBITTORRENT_PASSWORD:adminadmin}
+  actual-budget:
+    url: ${ACTUAL_BUDGET_URL:http://localhost:5007}
+    api-key: ${ACTUAL_BUDGET_API_KEY:}
+    sync-id: ${ACTUAL_BUDGET_SYNC_ID:}
 
 management:
   endpoints:
