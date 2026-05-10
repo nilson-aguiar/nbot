@@ -38,6 +38,7 @@ nbot:
     url: ${ACTUAL_BUDGET_URL:http://localhost:5007}
     api-key: ${ACTUAL_BUDGET_API_KEY:}
     sync-id: ${ACTUAL_BUDGET_SYNC_ID:}
+    default-account-id: ${ACTUAL_BUDGET_DEFAULT_ACCOUNT_ID:}
 
 management:
   endpoints:
