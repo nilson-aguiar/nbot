@@ -30,19 +30,30 @@
                     </li>
                 </ul>
             </div>
+
+            <!-- Navigation -->
+            <div class="card p-6">
+                <h2 class="text-sm font-semibold uppercase tracking-wider text-gray-400 mb-4">Navigation</h2>
+                <ul class="space-y-2">
+                    <li>
+                        <button hx-get="/dashboard/torrents" hx-target="#main-content" 
+                           class="w-full text-left px-4 py-2 rounded text-sm hover:bg-gray-800 transition-colors flex items-center gap-2">
+                           <span class="text-gray-400">⚡</span> Torrents
+                        </button>
+                    </li>
+                    <li>
+                        <button hx-get="/dashboard/budget" hx-target="#main-content" 
+                           class="w-full text-left px-4 py-2 rounded text-sm hover:bg-gray-800 transition-colors flex items-center gap-2">
+                           <span class="text-gray-400">💰</span> Budget
+                        </button>
+                    </li>
+                </ul>
+            </div>
         </div>
 
         <!-- Main Content -->
-        <div class="flex-grow flex flex-col gap-6">
-            <div class="card flex-grow flex flex-col overflow-hidden">
-                <div class="p-4 border-b border-gray-700 flex justify-between items-center">
-                    <h2 class="text-sm font-semibold uppercase tracking-wider text-gray-400">Live Execution Logs</h2>
-                </div>
-                <div class="p-4 flex-grow overflow-y-auto bg-black font-mono text-sm" 
-                     hx-ext="sse" sse-connect="/dashboard/logs/stream" sse-swap="message" hx-swap="beforeend">
-                    <div class="text-gray-500 italic">Waiting for logs...</div>
-                </div>
-            </div>
+        <div id="main-content" class="flex-grow flex flex-col gap-6">
+            <div th:replace="~{fragments/logs :: logs}"></div>
         </div>
     </div>
 </body>

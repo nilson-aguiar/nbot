@@ -1,15 +1,17 @@
 package dev.naguiar.nbot.budget.application
 
-import dev.naguiar.nbot.budget.infrastructure.api.ActualAccount
-import dev.naguiar.nbot.budget.infrastructure.api.ActualBudgetApi
+import dev.naguiar.nbot.budget.domain.TransactionStatus
+import dev.naguiar.nbot.budget.infrastructure.api.*
 import dev.naguiar.nbot.budget.infrastructure.config.ActualBudgetProperties
+import dev.naguiar.nbot.budget.infrastructure.db.TransactionDraftRepository
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 
 @Service
 class ActualBudgetService(
     private val actualBudgetApi: ActualBudgetApi,
-    private val properties: ActualBudgetProperties
+    private val properties: ActualBudgetProperties,
+    private val transactionDraftRepository: TransactionDraftRepository
 ) {
     private val log = LoggerFactory.getLogger(ActualBudgetService::class.java)
 
@@ -21,6 +23,40 @@ class ActualBudgetService(
         } catch (e: Exception) {
             log.error("Failed to fetch accounts from Actual Budget", e)
             emptyList()
+        }
+    }
+
+    fun syncApprovedDrafts(accountId: String) {
+        log.info("Syncing approved drafts to Actual Budget account: {}", accountId)
+        val approvedDrafts = transactionDraftRepository.findByStatus(TransactionStatus.APPROVED)
+        
+        if (approvedDrafts.isEmpty()) {
+            log.info("No approved drafts to sync")
+            return
+        }
+
+        val actualTransactions = approvedDrafts.map { draft ->
+            ActualTransaction(
+                accountId = accountId,
+                date = draft.bookingDate.toString(),
+                amount = draft.amount,
+                payeeId = draft.suggestedPayeeId,
+                payeeName = draft.suggestedPayeeName,
+                notes = draft.bankDescription
+            )
+        }
+
+        try {
+            val request = ActualTransactionRequest(actualTransactions)
+            actualBudgetApi.addTransactions(properties.apiKey, request)
+            
+            approvedDrafts.forEach { draft ->
+                draft.status = TransactionStatus.SYNCED
+            }
+            transactionDraftRepository.saveAll(approvedDrafts)
+            log.info("Successfully synced {} drafts to Actual Budget", approvedDrafts.size)
+        } catch (e: Exception) {
+            log.error("Failed to sync drafts to Actual Budget", e)
         }
     }
 }

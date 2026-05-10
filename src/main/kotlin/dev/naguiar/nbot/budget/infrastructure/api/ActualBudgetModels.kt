@@ -11,3 +11,17 @@ data class ActualAccount(
     val offbudget: Boolean,
     val closed: Boolean
 )
+
+data class ActualTransaction(
+    val accountId: String,
+    val date: String,
+    val amount: Long,
+    val payeeId: String?,
+    val payeeName: String?,
+    val notes: String?,
+    val cleared: Boolean = true
+)
+
+data class ActualTransactionRequest(
+    val transactions: List<ActualTransaction>
+)

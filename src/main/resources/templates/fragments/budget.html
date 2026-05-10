@@ -1,0 +1,55 @@
+<div th:fragment="budget" class="flex flex-col gap-6">
+    <!-- Upload Section -->
+    <div class="card p-6">
+        <h2 class="text-sm font-semibold uppercase tracking-wider text-gray-400 mb-4">Import Transactions (CAMT)</h2>
+        <form hx-post="/dashboard/budget/upload" hx-encoding="multipart/form-data" hx-target="#main-content" class="flex gap-4">
+            <input type="file" name="file" accept=".xml" class="flex-grow bg-[#0d1117] border border-[#30363d] rounded p-2 text-sm">
+            <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm font-medium transition-colors">
+                Upload
+            </button>
+        </form>
+    </div>
+
+    <!-- Pending Drafts -->
+    <div class="card flex-grow flex flex-col overflow-hidden">
+        <div class="p-4 border-b border-gray-700 flex justify-between items-center">
+            <h2 class="text-sm font-semibold uppercase tracking-wider text-gray-400">Pending Transaction Drafts</h2>
+            <span class="bg-yellow-900 text-yellow-200 text-xs px-2 py-1 rounded-full" th:text="${#lists.size(drafts) + ' pending'}">0 pending</span>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm">
+                <thead class="bg-[#0d1117] text-gray-400 uppercase text-xs">
+                    <tr>
+                        <th class="p-4">Date</th>
+                        <th class="p-4">Amount</th>
+                        <th class="p-4">Bank Payee / Description</th>
+                        <th class="p-4">Suggested Payee</th>
+                        <th class="p-4 text-right">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-800">
+                    <tr th:each="draft : ${drafts}" class="hover:bg-gray-800/50 transition-colors">
+                        <td class="p-4 font-mono" th:text="${draft.bookingDate}">2024-05-10</td>
+                        <td class="p-4 font-mono" th:classappend="${draft.amount < 0 ? 'text-red-400' : 'text-green-400'}" 
+                            th:text="${(draft.amount / 100.0) + ' ' + draft.currency}">-50.00 EUR</td>
+                        <td class="p-4">
+                            <div class="font-medium" th:text="${draft.bankPayeeName}">Bank Payee</div>
+                            <div class="text-xs text-gray-500 truncate max-w-xs" th:text="${draft.bankDescription}">Description</div>
+                        </td>
+                        <td class="p-4">
+                            <div class="text-blue-400" th:text="${draft.suggestedPayeeName ?: 'None'}">Suggested</div>
+                        </td>
+                        <td class="p-4 text-right">
+                            <button th:hx-post="'/dashboard/budget/approve/' + ${draft.id}" 
+                                    hx-target="#main-content"
+                                    class="text-green-400 hover:text-green-300 font-medium">Approve</button>
+                        </td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(drafts)}">
+                        <td colspan="5" class="p-8 text-center text-gray-500 italic">No pending drafts found.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
