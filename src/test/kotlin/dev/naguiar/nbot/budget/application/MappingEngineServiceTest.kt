@@ -2,9 +2,12 @@ package dev.naguiar.nbot.budget.application
 
 import dev.naguiar.nbot.budget.domain.PayeeMapping
 import dev.naguiar.nbot.budget.domain.TransactionDraft
+import dev.naguiar.nbot.budget.domain.TransactionStatus
+import dev.naguiar.nbot.budget.infrastructure.config.ActualBudgetProperties
 import dev.naguiar.nbot.budget.infrastructure.db.PayeeMappingRepository
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
@@ -12,7 +15,9 @@ import java.time.LocalDate
 class MappingEngineServiceTest {
 
     private val repository = mockk<PayeeMappingRepository>()
-    private val service = MappingEngineService(repository)
+    private val budgetAiService = mockk<BudgetAiService>()
+    private val properties = ActualBudgetProperties(internalAccounts = listOf("Savings"))
+    private val service = MappingEngineService(repository, budgetAiService, properties)
 
     @Test
     fun `should map transaction by bankPayeeName`() {
@@ -27,11 +32,12 @@ class MappingEngineServiceTest {
         val draft = createDraft(bankPayeeName = "AMAZON MKTPLACE", bankDescription = "something else")
 
         // When
-        service.map(draft)
+        service.applyMappings(draft)
 
         // Then
         assertThat(draft.suggestedPayeeId).isEqualTo("amazon-id")
         assertThat(draft.suggestedPayeeName).isEqualTo("Amazon.com")
+        verify(exactly = 0) { budgetAiService.suggestMapping(any(), any(), any(), any()) }
     }
 
     @Test
@@ -47,11 +53,12 @@ class MappingEngineServiceTest {
         val draft = createDraft(bankPayeeName = "Unknown", bankDescription = "PURCHASE AT REWE STORE")
 
         // When
-        service.map(draft)
+        service.applyMappings(draft)
 
         // Then
         assertThat(draft.suggestedPayeeId).isEqualTo("rewe-id")
         assertThat(draft.suggestedPayeeName).isEqualTo("REWE Supermarket")
+        verify(exactly = 0) { budgetAiService.suggestMapping(any(), any(), any(), any()) }
     }
 
     @Test
@@ -72,7 +79,7 @@ class MappingEngineServiceTest {
         val draft = createDraft(bankPayeeName = "AMAZON MKTPLACE")
 
         // When
-        service.map(draft)
+        service.applyMappings(draft)
 
         // Then
         assertThat(draft.suggestedPayeeId).isEqualTo("amazon-id")
@@ -80,23 +87,85 @@ class MappingEngineServiceTest {
     }
 
     @Test
-    fun `should not map if no pattern matches`() {
+    fun `should use AI fallback if no pattern matches`() {
         // Given
-        val mapping = PayeeMapping(
-            bankPattern = "Amazon",
-            actualPayeeName = "Amazon.com",
-            actualPayeeId = "amazon-id"
+        every { repository.findAll() } returns emptyList()
+        val aiResponse = BudgetAiService.AiMappingResponse(
+            payeeId = "ai-payee-id",
+            payeeName = "AI Payee",
+            isTransfer = false,
+            targetAccountId = null,
+            confidence = 0.8f,
+            reasoning = "Looks like AI Payee"
         )
-        every { repository.findAll() } returns listOf(mapping)
+        every {
+            budgetAiService.suggestMapping(
+                "Netflix",
+                "Subscription",
+                emptyList(),
+                listOf(BudgetAiService.InternalAccount("Savings", "Savings"))
+            )
+        } returns aiResponse
 
         val draft = createDraft(bankPayeeName = "Netflix", bankDescription = "Subscription")
 
         // When
-        service.map(draft)
+        service.applyMappings(draft)
+
+        // Then
+        assertThat(draft.suggestedPayeeId).isEqualTo("ai-payee-id")
+        assertThat(draft.suggestedPayeeName).isEqualTo("AI Payee")
+    }
+
+    @Test
+    fun `should ignore AI fallback if confidence is too low`() {
+        // Given
+        every { repository.findAll() } returns emptyList()
+        val aiResponse = BudgetAiService.AiMappingResponse(
+            payeeId = "ai-payee-id",
+            payeeName = "AI Payee",
+            isTransfer = false,
+            targetAccountId = null,
+            confidence = 0.5f,
+            reasoning = "Not sure"
+        )
+        every {
+            budgetAiService.suggestMapping(any(), any(), any(), any())
+        } returns aiResponse
+
+        val draft = createDraft(bankPayeeName = "Netflix", bankDescription = "Subscription")
+
+        // When
+        service.applyMappings(draft)
 
         // Then
         assertThat(draft.suggestedPayeeId).isNull()
         assertThat(draft.suggestedPayeeName).isNull()
+    }
+
+    @Test
+    fun `should set status to IGNORED if AI identifies it as a transfer`() {
+        // Given
+        every { repository.findAll() } returns emptyList()
+        val aiResponse = BudgetAiService.AiMappingResponse(
+            payeeId = null,
+            payeeName = null,
+            isTransfer = true,
+            targetAccountId = "savings-id",
+            confidence = 0.9f,
+            reasoning = "Internal transfer"
+        )
+        every {
+            budgetAiService.suggestMapping(any(), any(), any(), any())
+        } returns aiResponse
+
+        val draft = createDraft(bankPayeeName = "Transfer to Savings")
+
+        // When
+        service.applyMappings(draft)
+
+        // Then
+        assertThat(draft.status).isEqualTo(TransactionStatus.IGNORED)
     }
 
     private fun createDraft(bankPayeeName: String = "", bankDescription: String = "") = TransactionDraft(

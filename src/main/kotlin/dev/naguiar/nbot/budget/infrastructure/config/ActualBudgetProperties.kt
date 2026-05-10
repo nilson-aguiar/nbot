@@ -6,5 +6,9 @@ import org.springframework.boot.context.properties.ConfigurationProperties
 data class ActualBudgetProperties(
     val url: String = "http://localhost:5007",
     val apiKey: String = "",
-    val syncId: String = ""
+    val syncId: String = "",
+    val internalAccounts: List<String> = listOf(
+        "Main account", "Joint account", "My son's account", "Month balance", "Extras",
+        "Apolo", "Nilson", "Férias", "Poupança", "Mês seguinte", "Renata"
+    )
 )

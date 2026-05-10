@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:camt.053.001.02">
+    <BkToCstmrStmt>
+        <Stmt>
+            <Id>STMT-001</Id>
+            <Ntry>
+                <Amt Ccy="EUR">12.34</Amt>
+                <CdtDbtInd>DBIT</CdtDbtInd>
+                <Status>BOOK</Status>
+                <BookgDt>
+                    <Dt>2023-10-27</Dt>
+                </BookgDt>
+                <NtryDtls>
+                    <TxDtls>
+                        <RltdPties>
+                            <Cdtr>
+                                <Nm>Supermarket XYZ</Nm>
+                            </Cdtr>
+                        </RltdPties>
+                        <RmtInf>
+                            <Ustrd>Grocery shopping</Ustrd>
+                        </RmtInf>
+                    </TxDtls>
+                </NtryDtls>
+            </Ntry>
+            <Ntry>
+                <Amt Ccy="EUR">1000.00</Amt>
+                <CdtDbtInd>CRDT</CdtDbtInd>
+                <Status>BOOK</Status>
+                <BookgDt>
+                    <Dt>2023-10-28</Dt>
+                </BookgDt>
+                <NtryDtls>
+                    <TxDtls>
+                        <RltdPties>
+                            <Dbtr>
+                                <Nm>Employer ABC</Nm>
+                            </Dbtr>
+                        </RltdPties>
+                        <RmtInf>
+                            <Ustrd>Monthly Salary</Ustrd>
+                        </RmtInf>
+                    </TxDtls>
+                </NtryDtls>
+            </Ntry>
+            <Ntry>
+                <Amt Ccy="EUR">5.50</Amt>
+                <CdtDbtInd>DBIT</CdtDbtInd>
+                <Status>BOOK</Status>
+                <BookgDt>
+                    <DtTm>2023-10-29T10:00:00</DtTm>
+                </BookgDt>
+                <RltdPties>
+                    <Cdtr>
+                        <Nm>Coffee Shop</Nm>
+                    </Cdtr>
+                </RltdPties>
+            </Ntry>
+        </Stmt>
+    </BkToCstmrStmt>
+</Document>
