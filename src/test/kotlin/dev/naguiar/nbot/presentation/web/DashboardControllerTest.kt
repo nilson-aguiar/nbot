@@ -2,8 +2,10 @@ package dev.naguiar.nbot.presentation.web
 
 import dev.naguiar.nbot.application.web.DashboardDataService
 import dev.naguiar.nbot.application.web.MetricsInfo
+import dev.naguiar.nbot.budget.application.ActualBudgetService
 import dev.naguiar.nbot.budget.application.BudgetImportService
 import dev.naguiar.nbot.budget.domain.TransactionStatus
+import dev.naguiar.nbot.budget.infrastructure.config.ActualBudgetProperties
 import dev.naguiar.nbot.budget.infrastructure.db.TransactionDraftRepository
 import dev.naguiar.nbot.infrastructure.logging.SseLogEmitterService
 import io.mockk.every
@@ -22,7 +24,17 @@ class DashboardControllerTest {
     private val logEmitterService = mockk<SseLogEmitterService>(relaxed = true)
     private val budgetImportService = mockk<BudgetImportService>()
     private val transactionDraftRepository = mockk<TransactionDraftRepository>()
-    private val controller = DashboardController(dataService, logEmitterService, budgetImportService, transactionDraftRepository)
+    private val actualBudgetService = mockk<ActualBudgetService>()
+    private val properties = ActualBudgetProperties(defaultAccountId = "test-account")
+    private val controller =
+        DashboardController(
+            dataService,
+            logEmitterService,
+            budgetImportService,
+            transactionDraftRepository,
+            actualBudgetService,
+            properties,
+        )
     private val mockMvc =
         MockMvcBuilders
             .standaloneSetup(controller)
@@ -70,6 +82,18 @@ class DashboardControllerTest {
 
         mockMvc
             .perform(get("/dashboard/budget"))
+            .andExpect(status().isOk)
+            .andExpect(view().name("fragments/budget :: budget"))
+            .andExpect(model().attributeExists("drafts"))
+    }
+
+    @Test
+    fun `should sync budget and return budget fragment`() {
+        every { actualBudgetService.syncApprovedDrafts("test-account") } returns Unit
+        every { transactionDraftRepository.findByStatus(TransactionStatus.PENDING) } returns emptyList()
+
+        mockMvc
+            .perform(post("/dashboard/budget/sync"))
             .andExpect(status().isOk)
             .andExpect(view().name("fragments/budget :: budget"))
             .andExpect(model().attributeExists("drafts"))
