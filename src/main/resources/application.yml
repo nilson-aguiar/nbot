@@ -29,6 +29,7 @@ nbot:
     enabled: true
     allowed-users: ${ALLOWED_USERS:}
     telegram-bot-token: ${TELEGRAM_BOT_TOKEN:}
+    dashboard-url: ${DASHBOARD_URL:http://localhost:8080}
   qbittorrent:
     url: ${QBITTORRENT_URL:http://localhost:8090}
     username: ${QBITTORRENT_USERNAME:admin}
