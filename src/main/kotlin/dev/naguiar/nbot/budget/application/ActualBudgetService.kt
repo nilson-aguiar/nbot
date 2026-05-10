@@ -27,6 +27,10 @@ class ActualBudgetService(
     }
 
     fun syncApprovedDrafts(accountId: String) {
+        if (accountId.isEmpty()) {
+            log.error("Cannot sync approved drafts: default account ID is not configured")
+            return
+        }
         log.info("Syncing approved drafts to Actual Budget account: {}", accountId)
         val approvedDrafts = transactionDraftRepository.findByStatus(TransactionStatus.APPROVED)
         
