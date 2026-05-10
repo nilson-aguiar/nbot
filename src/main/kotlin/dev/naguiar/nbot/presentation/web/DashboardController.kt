@@ -1,8 +1,10 @@
 package dev.naguiar.nbot.presentation.web
 
 import dev.naguiar.nbot.application.web.DashboardDataService
+import dev.naguiar.nbot.budget.application.ActualBudgetService
 import dev.naguiar.nbot.budget.application.BudgetImportService
 import dev.naguiar.nbot.budget.domain.TransactionStatus
+import dev.naguiar.nbot.budget.infrastructure.config.ActualBudgetProperties
 import dev.naguiar.nbot.budget.infrastructure.db.TransactionDraftRepository
 import dev.naguiar.nbot.infrastructure.logging.SseLogEmitterService
 import org.springframework.stereotype.Controller
@@ -21,6 +23,8 @@ class DashboardController(
     private val logEmitterService: SseLogEmitterService,
     private val budgetImportService: BudgetImportService,
     private val transactionDraftRepository: TransactionDraftRepository,
+    private val actualBudgetService: ActualBudgetService,
+    private val properties: ActualBudgetProperties
 ) {
     @GetMapping("/dashboard")
     fun dashboard(model: Model): String {
@@ -60,6 +64,12 @@ class DashboardController(
             draft.status = TransactionStatus.APPROVED
             transactionDraftRepository.save(draft)
         }
+        return budgetFragment(model)
+    }
+
+    @PostMapping("/dashboard/budget/sync")
+    fun syncBudget(model: Model): String {
+        actualBudgetService.syncApprovedDrafts(properties.defaultAccountId)
         return budgetFragment(model)
     }
 
