@@ -15,10 +15,12 @@ class BudgetImportServiceTest {
     private val camtParserService = mockk<CamtParserService>()
     private val mappingEngineService = mockk<MappingEngineService>(relaxed = true)
     private val transactionDraftRepository = mockk<TransactionDraftRepository>(relaxed = true)
+    private val actualBudgetService = mockk<ActualBudgetService>(relaxed = true)
     private val budgetImportService = BudgetImportService(
         camtParserService,
         mappingEngineService,
-        transactionDraftRepository
+        transactionDraftRepository,
+        actualBudgetService
     )
 
     @Test
@@ -29,7 +31,7 @@ class BudgetImportServiceTest {
         val draft2 = createDraft("Netflix")
         val drafts = listOf(draft1, draft2)
 
-        every { camtParserService.parse(inputStream, any()) } returns drafts
+        every { camtParserService.parse(any<InputStream>(), any()) } returns drafts
         every { transactionDraftRepository.saveAll(drafts) } returns drafts
 
         // When
@@ -37,7 +39,7 @@ class BudgetImportServiceTest {
 
         // Then
         assertThat(exportFileId).isNotNull()
-        verify { camtParserService.parse(inputStream, exportFileId) }
+        verify { camtParserService.parse(any<InputStream>(), exportFileId) }
         verify { mappingEngineService.applyMappings(draft1) }
         verify { mappingEngineService.applyMappings(draft2) }
         verify { transactionDraftRepository.saveAll(drafts) }

@@ -26,6 +26,17 @@ class ActualBudgetService(
         }
     }
 
+    fun getPayees(): List<ActualPayee> {
+        log.info("Fetching payees from Actual Budget")
+        return try {
+            val response = actualBudgetApi.getPayees(properties.apiKey)
+            response.data
+        } catch (e: Exception) {
+            log.error("Failed to fetch payees from Actual Budget", e)
+            emptyList()
+        }
+    }
+
     fun syncApprovedDrafts(accountId: String) {
         if (accountId.isEmpty()) {
             log.error("Cannot sync approved drafts: default account ID is not configured")

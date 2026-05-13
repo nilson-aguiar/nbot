@@ -17,7 +17,8 @@ class BudgetImportZipTest {
     private val camtParserService = mockk<CamtParserService>()
     private val mappingEngineService = mockk<MappingEngineService>()
     private val transactionDraftRepository = mockk<TransactionDraftRepository>()
-    private val budgetImportService = BudgetImportService(camtParserService, mappingEngineService, transactionDraftRepository)
+    private val actualBudgetService = mockk<ActualBudgetService>(relaxed = true)
+    private val budgetImportService = BudgetImportService(camtParserService, mappingEngineService, transactionDraftRepository, actualBudgetService)
 
     @Test
     fun `should process all XML files in ZIP recursively and use consistent exportFileId`() {
@@ -39,7 +40,11 @@ class BudgetImportZipTest {
         val exportFileIdSlot = mutableListOf<String>()
         val mockDraft = mockk<TransactionDraft>()
         
-        every { camtParserService.parse(any<InputStream>(), capture(exportFileIdSlot)) } returns listOf(mockDraft)
+        every { camtParserService.parse(any<InputStream>(), capture(exportFileIdSlot)) } answers {
+            val stream = firstArg<InputStream>()
+            stream.close() // Simulate parser closing the stream
+            listOf(mockDraft)
+        }
         every { mappingEngineService.applyMappings(mockDraft) } returns Unit
         every { transactionDraftRepository.saveAll(any<List<TransactionDraft>>()) } returns listOf(mockDraft)
 

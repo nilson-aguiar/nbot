@@ -16,7 +16,7 @@ class MappingEngineService(
 ) {
     private val log = LoggerFactory.getLogger(MappingEngineService::class.java)
 
-    fun applyMappings(draft: TransactionDraft) {
+    fun applyMappings(draft: TransactionDraft, payees: List<dev.naguiar.nbot.budget.infrastructure.api.ActualPayee> = emptyList()) {
         val mappings = payeeMappingRepository.findAll()
         
         for (mapping in mappings) {
@@ -35,10 +35,14 @@ class MappingEngineService(
                 BudgetAiService.InternalAccount(it, it)
             }
             
+            val knownPayees = payees.map { 
+                BudgetAiService.ActualPayee(it.id, it.name)
+            }
+            
             val aiResponse = budgetAiService.suggestMapping(
                 bankPayeeName = draft.bankPayeeName,
                 bankDescription = draft.bankDescription,
-                knownPayees = emptyList(), // For now
+                knownPayees = knownPayees,
                 internalAccounts = internalAccounts
             )
 
