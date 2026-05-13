@@ -26,6 +26,11 @@ class DashboardController(
     private val actualBudgetService: ActualBudgetService,
     private val properties: ActualBudgetProperties
 ) {
+    @GetMapping("/")
+    fun index(): String {
+        return "redirect:/dashboard"
+    }
+
     @GetMapping("/dashboard")
     fun dashboard(model: Model): String {
         model.addAttribute("tools", dataService.getRegisteredTools())
@@ -75,6 +80,12 @@ class DashboardController(
     @PostMapping("/dashboard/budget/sync")
     fun syncBudget(model: Model): String {
         actualBudgetService.syncApprovedDrafts(properties.defaultAccountId)
+        return budgetFragment(model)
+    }
+
+    @PostMapping("/dashboard/budget/re-evaluate")
+    fun reEvaluateBudget(model: Model): String {
+        budgetImportService.reEvaluatePending()
         return budgetFragment(model)
     }
 

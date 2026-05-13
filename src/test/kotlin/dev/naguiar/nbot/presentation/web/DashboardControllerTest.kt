@@ -17,6 +17,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.model
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.view
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
@@ -47,6 +48,14 @@ class DashboardControllerTest {
                     setSuffix(".html")
                 },
             ).build()
+
+    @Test
+    fun `should redirect from root to dashboard`() {
+        mockMvc
+            .perform(get("/"))
+            .andExpect(status().is3xxRedirection)
+            .andExpect(redirectedUrl("/dashboard"))
+    }
 
     @Test
     fun `should return dashboard view`() {
@@ -127,6 +136,18 @@ class DashboardControllerTest {
 
         mockMvc
             .perform(post("/dashboard/budget/sync"))
+            .andExpect(status().isOk)
+            .andExpect(view().name("fragments/budget :: budget"))
+            .andExpect(model().attributeExists("drafts"))
+    }
+
+    @Test
+    fun `should re-evaluate budget and return budget fragment`() {
+        every { budgetImportService.reEvaluatePending() } returns Unit
+        every { transactionDraftRepository.findByStatus(TransactionStatus.PENDING) } returns emptyList()
+
+        mockMvc
+            .perform(post("/dashboard/budget/re-evaluate"))
             .andExpect(status().isOk)
             .andExpect(view().name("fragments/budget :: budget"))
             .andExpect(model().attributeExists("drafts"))
