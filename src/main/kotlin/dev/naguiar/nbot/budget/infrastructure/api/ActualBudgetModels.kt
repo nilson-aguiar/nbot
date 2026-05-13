@@ -25,3 +25,12 @@ data class ActualTransaction(
 data class ActualTransactionRequest(
     val transactions: List<ActualTransaction>
 )
+
+data class ActualPayeeResponse(
+    val data: List<ActualPayee>
+)
+
+data class ActualPayee(
+    val id: String,
+    val name: String
+)

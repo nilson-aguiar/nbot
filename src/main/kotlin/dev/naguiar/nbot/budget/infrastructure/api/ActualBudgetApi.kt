@@ -12,6 +12,11 @@ interface ActualBudgetApi {
         @RequestHeader("x-api-key") apiKey: String
     ): ActualAccountResponse
 
+    @GetExchange("/payees")
+    fun getPayees(
+        @RequestHeader("x-api-key") apiKey: String
+    ): ActualPayeeResponse
+
     @PostExchange("/transactions")
     fun addTransactions(
         @RequestHeader("x-api-key") apiKey: String,
