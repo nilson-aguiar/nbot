@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.io.InputStream
 import java.util.UUID
+import java.util.zip.ZipInputStream
 
 @Service
 class BudgetImportService(
@@ -25,14 +26,15 @@ class BudgetImportService(
     @Transactional
     fun importZip(inputStream: InputStream): String {
         val exportFileId = UUID.randomUUID().toString()
-        val zipStream = java.util.zip.ZipInputStream(inputStream)
-        var entry = zipStream.nextEntry
-        while (entry != null) {
-            if (!entry.isDirectory && entry.name.endsWith(".xml", ignoreCase = true)) {
-                logger.info("Found XML entry in ZIP: {}", entry.name)
-                processCamtStream(zipStream, exportFileId)
+        ZipInputStream(inputStream).use { zipStream ->
+            var entry = zipStream.nextEntry
+            while (entry != null) {
+                if (!entry.isDirectory && entry.name.endsWith(".xml", ignoreCase = true)) {
+                    logger.info("Found XML entry in ZIP: {}", entry.name)
+                    processCamtStream(zipStream, exportFileId)
+                }
+                entry = zipStream.nextEntry
             }
-            entry = zipStream.nextEntry
         }
         return exportFileId
     }
