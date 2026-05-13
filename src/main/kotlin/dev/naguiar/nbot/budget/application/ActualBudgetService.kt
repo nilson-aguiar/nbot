@@ -18,7 +18,7 @@ class ActualBudgetService(
     fun getAccounts(): List<ActualAccount> {
         log.info("Fetching accounts from Actual Budget")
         return try {
-            val response = actualBudgetApi.getAccounts(properties.apiKey)
+            val response = actualBudgetApi.getAccounts(properties.apiKey, properties.syncId)
             response.data
         } catch (e: Exception) {
             log.error("Failed to fetch accounts from Actual Budget", e)
@@ -29,7 +29,7 @@ class ActualBudgetService(
     fun getPayees(): List<ActualPayee> {
         log.info("Fetching payees from Actual Budget")
         return try {
-            val response = actualBudgetApi.getPayees(properties.apiKey)
+            val response = actualBudgetApi.getPayees(properties.apiKey, properties.syncId)
             response.data
         } catch (e: Exception) {
             log.error("Failed to fetch payees from Actual Budget", e)
@@ -63,7 +63,7 @@ class ActualBudgetService(
 
         try {
             val request = ActualTransactionRequest(actualTransactions)
-            actualBudgetApi.addTransactions(properties.apiKey, request)
+            actualBudgetApi.addTransactions(properties.apiKey, properties.syncId, accountId, request)
             
             approvedDrafts.forEach { draft ->
                 draft.status = TransactionStatus.SYNCED

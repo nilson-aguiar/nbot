@@ -16,7 +16,7 @@ import java.time.LocalDate
 class ActualBudgetServiceTest {
 
     private val api = mockk<ActualBudgetApi>()
-    private val properties = ActualBudgetProperties(url = "http://localhost:5006", apiKey = "secret-key")
+    private val properties = ActualBudgetProperties(url = "http://localhost:5006", apiKey = "secret-key", syncId = "sync-123")
     private val repository = mockk<TransactionDraftRepository>()
     private val service = ActualBudgetService(api, properties, repository)
 
@@ -25,12 +25,25 @@ class ActualBudgetServiceTest {
         val expectedAccounts = listOf(
             ActualAccount("1", "Main Account", "bank", offbudget = false, closed = false)
         )
-        every { api.getAccounts("secret-key") } returns ActualAccountResponse(expectedAccounts)
+        every { api.getAccounts("secret-key", "sync-123") } returns ActualAccountResponse(expectedAccounts)
 
         val result = service.getAccounts()
 
         assertThat(result).hasSize(1)
         assertThat(result[0].name).isEqualTo("Main Account")
+    }
+
+    @Test
+    fun `should fetch payees successfully`() {
+        val expectedPayees = listOf(
+            ActualPayee("p1", "Amazon")
+        )
+        every { api.getPayees("secret-key", "sync-123") } returns ActualPayeeResponse(expectedPayees)
+
+        val result = service.getPayees()
+
+        assertThat(result).hasSize(1)
+        assertThat(result[0].name).isEqualTo("Amazon")
     }
 
     @Test
@@ -46,12 +59,12 @@ class ActualBudgetServiceTest {
             exportFileId = "file-1"
         )
         every { repository.findByStatus(TransactionStatus.APPROVED) } returns listOf(draft)
-        every { api.addTransactions(any(), any()) } returns ResponseEntity.ok().build()
+        every { api.addTransactions(any(), any(), any(), any()) } returns ResponseEntity.ok().build()
         every { repository.saveAll(any<List<TransactionDraft>>()) } returns listOf(draft)
 
         service.syncApprovedDrafts("account-456")
 
-        verify { api.addTransactions("secret-key", match { 
+        verify { api.addTransactions("secret-key", "sync-123", "account-456", match { 
             it.transactions.size == 1 && it.transactions[0].accountId == "account-456" 
         }) }
         verify { repository.saveAll(match<List<TransactionDraft>> { it[0].status == TransactionStatus.SYNCED }) }
