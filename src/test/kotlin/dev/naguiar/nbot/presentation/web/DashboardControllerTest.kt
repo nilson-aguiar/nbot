@@ -10,8 +10,11 @@ import dev.naguiar.nbot.budget.infrastructure.db.TransactionDraftRepository
 import dev.naguiar.nbot.infrastructure.logging.SseLogEmitterService
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.verify
 import org.junit.jupiter.api.Test
+import org.springframework.mock.web.MockMultipartFile
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.model
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
@@ -85,6 +88,36 @@ class DashboardControllerTest {
             .andExpect(status().isOk)
             .andExpect(view().name("fragments/budget :: budget"))
             .andExpect(model().attributeExists("drafts"))
+    }
+
+    @Test
+    fun `should upload camt xml and return budget fragment`() {
+        val file = MockMultipartFile("file", "test.xml", "text/xml", "<xml></xml>".toByteArray())
+        every { budgetImportService.importCamt(any()) } returns "test-id"
+        every { transactionDraftRepository.findByStatus(TransactionStatus.PENDING) } returns emptyList()
+
+        mockMvc
+            .perform(multipart("/dashboard/budget/upload").file(file))
+            .andExpect(status().isOk)
+            .andExpect(view().name("fragments/budget :: budget"))
+            .andExpect(model().attributeExists("drafts"))
+
+        verify { budgetImportService.importCamt(any()) }
+    }
+
+    @Test
+    fun `should upload zip and return budget fragment`() {
+        val file = MockMultipartFile("file", "test.zip", "application/zip", "dummy zip".toByteArray())
+        every { budgetImportService.importZip(any()) } returns "test-id"
+        every { transactionDraftRepository.findByStatus(TransactionStatus.PENDING) } returns emptyList()
+
+        mockMvc
+            .perform(multipart("/dashboard/budget/upload").file(file))
+            .andExpect(status().isOk)
+            .andExpect(view().name("fragments/budget :: budget"))
+            .andExpect(model().attributeExists("drafts"))
+
+        verify { budgetImportService.importZip(any()) }
     }
 
     @Test

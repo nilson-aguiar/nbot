@@ -53,7 +53,12 @@ class DashboardController(
     @PostMapping("/dashboard/budget/upload")
     fun uploadCamt(@RequestParam("file") file: MultipartFile, model: Model): String {
         if (!file.isEmpty) {
-            budgetImportService.importCamt(file.inputStream)
+            val filename = file.originalFilename?.lowercase() ?: ""
+            if (filename.endsWith(".zip")) {
+                budgetImportService.importZip(file.inputStream)
+            } else {
+                budgetImportService.importCamt(file.inputStream)
+            }
         }
         return budgetFragment(model)
     }

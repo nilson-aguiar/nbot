@@ -1,9 +1,9 @@
 <div th:fragment="budget" class="flex flex-col gap-6">
     <!-- Upload Section -->
     <div class="card p-6">
-        <h2 class="text-sm font-semibold uppercase tracking-wider text-gray-400 mb-4">Import Transactions (CAMT)</h2>
+        <h2 class="text-sm font-semibold uppercase tracking-wider text-gray-400 mb-4">Import Transactions (CAMT / ZIP)</h2>
         <form hx-post="/dashboard/budget/upload" hx-encoding="multipart/form-data" hx-target="#main-content" class="flex gap-4">
-            <input type="file" name="file" accept=".xml" class="flex-grow bg-[#0d1117] border border-[#30363d] rounded p-2 text-sm">
+            <input type="file" name="file" accept=".xml,.zip" class="flex-grow bg-[#0d1117] border border-[#30363d] rounded p-2 text-sm">
             <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm font-medium transition-colors">
                 Upload
             </button>
