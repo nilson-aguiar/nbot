@@ -18,19 +18,19 @@ class BudgetImportService(
     @Transactional
     fun importCamt(inputStream: InputStream): String {
         val exportFileId = UUID.randomUUID().toString()
-        logger.info("Starting CAMT import with exportFileId: {}", exportFileId)
+        processCamtStream(inputStream, exportFileId)
+        return exportFileId
+    }
 
+    private fun processCamtStream(inputStream: InputStream, exportFileId: String) {
+        logger.info("Processing CAMT stream with exportFileId: {}", exportFileId)
         val drafts = camtParserService.parse(inputStream, exportFileId)
-        logger.info("Parsed {} drafts from CAMT file", drafts.size)
+        logger.info("Parsed {} drafts from CAMT stream", drafts.size)
 
         drafts.forEach { draft ->
             mappingEngineService.applyMappings(draft)
         }
-        logger.info("Applied deterministic mappings to {} drafts", drafts.size)
-
         transactionDraftRepository.saveAll(drafts)
         logger.info("Saved {} drafts to repository", drafts.size)
-
-        return exportFileId
     }
 }
