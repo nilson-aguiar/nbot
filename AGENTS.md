@@ -42,3 +42,4 @@ The application follows a Clean Code structure with feature-based packaging.
 3. **Internal Transfers**: When updating mapping logic, respect the `internalAccounts` configuration to prevent transfers from being treated as expenses.
 4. **Resiliency**: Services depending on AI should use `ObjectProvider` or null-checks to ensure the application starts even if AI profiles are inactive.
 5. **Testing**: New features require unit tests (MockK) and, if they touch the database, integration tests (Testcontainers).
+6. **OpenAPI**: The Actual Budget API client is generated from `src/main/resources/api/actual-budget-swagger.json`. Do not edit files in `infrastructure/api/generated` manually. Run `./gradlew openApiGenerate` if the spec changes.

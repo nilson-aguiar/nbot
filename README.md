@@ -4,23 +4,25 @@
 
 ## 🚀 Features
 
-- **Telegram Bot**: Handles magnet links and `.torrent` file uploads.
+- **Telegram Bot**: Handles magnet links, `.torrent` file uploads, and CAMT.053 bank statement processing.
 - **qBittorrent Integration**: Automatically forwards torrents to a configured qBittorrent instance.
-- **Web Dashboard**: Monitor system metrics (CPU, Memory, Uptime) and live execution logs in real-time.
+- **Budget Management**: Parse bank statements, use AI for intelligent payee mapping, and sync transactions to Actual Budget.
+- **Web Dashboard**: Monitor system metrics (CPU, Memory, Uptime), live execution logs, and manage pending budget drafts in real-time.
 - **Containerized**: Ready for Docker and Kubernetes (Helm).
 
 ## 🛠 Tech Stack
 
-- **Backend**: Kotlin 1.9.25, Spring Boot 3.5.x
+- **Backend**: Kotlin 2.x, Java 25, Spring Boot 3.5.x
 - **Frontend**: HTMX, Thymeleaf, Tailwind CSS (via CDN)
 - **Infrastructure**: Docker, Docker Compose, Helm (Kubernetes)
 - **CI/CD**: GitHub Actions
 
-## 📍 Current State: Direct Forwarding
+## 📍 Current State: Hybrid Assistant
 
-Currently, `nbot` operates as a **deterministic torrent forwarder**.
-- When a user sends a magnet link or uploads a `.torrent` file to the Telegram bot, it is directly sent to the qBittorrent Web API.
-- The AI-driven reasoning (Spring AI) is **temporarily disabled** while the core integration and infrastructure are being polished.
+Currently, `nbot` operates as a **hybrid assistant**.
+- **Torrents**: Direct forwarding of magnet links and `.torrent` files to qBittorrent.
+- **Budget**: Fully functional bank statement parsing and AI-assisted syncing to Actual Budget.
+- **Dashboard**: Interactive HTMX-based interface for metrics, logs, and budget approval.
 
 ## 🧠 Roadmap: AI Bot Integration
 
