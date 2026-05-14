@@ -46,7 +46,6 @@ class BudgetImportZipTest {
             stream.close() // Simulate parser closing the stream
             listOf(mockDraft)
         }
-        every { mappingEngineService.applyMappings(mockDraft) } returns mockDraft
         every { transactionDraftRepository.saveAll(any<List<TransactionDraft>>()) } returns listOf(mockDraft)
 
         val returnedId = budgetImportService.importZip(zipContent.inputStream())
@@ -58,7 +57,6 @@ class BudgetImportZipTest {
 
         // Verify processing and saving
         verify(exactly = 2) { camtParserService.parse(any<InputStream>(), any<String>()) }
-        verify(exactly = 2) { mappingEngineService.applyMappings(mockDraft) }
         verify(exactly = 2) { transactionDraftRepository.saveAll(listOf(mockDraft)) }
     }
 }

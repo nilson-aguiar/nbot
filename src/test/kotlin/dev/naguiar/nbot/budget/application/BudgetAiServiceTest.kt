@@ -54,6 +54,7 @@ class BudgetAiServiceTest {
         val service = BudgetAiService(chatModelProvider, properties)
 
         every { chatClient.prompt() } returns promptSpec
+        every { promptSpec.system(any<String>()) } returns promptSpec
         every { promptSpec.user(any<String>()) } returns promptSpec
         every { promptSpec.call() } returns callResponseSpec
         every { callResponseSpec.entity(BudgetAiService.AiMappingResponse::class.java) } returns expectedResponse
