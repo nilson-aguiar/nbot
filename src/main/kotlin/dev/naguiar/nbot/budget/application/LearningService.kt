@@ -1,6 +1,6 @@
 package dev.naguiar.nbot.budget.application
 
-import dev.naguiar.nbot.budget.infrastructure.db.PayeeMappingRepository
+import dev.naguiar.nbot.budget.domain.PayeeMappingRepository
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 

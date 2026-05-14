@@ -33,7 +33,7 @@ class BudgetRepositoriesTest {
     }
 
     @Autowired
-    lateinit var payeeMappingRepository: PayeeMappingRepository
+    lateinit var payeeMappingRepository: JpaPayeeMappingRepository
 
     @Autowired
     lateinit var transactionDraftRepository: JpaTransactionDraftRepository
@@ -46,9 +46,9 @@ class BudgetRepositoriesTest {
                 actualPayeeName = "Amazon",
                 actualPayeeId = "uuid-123",
             )
-        val saved = payeeMappingRepository.save(mapping)
+        val saved = payeeMappingRepository.save(PayeeMappingEntity.fromDomain(mapping)).toDomain()
 
-        val retrieved = payeeMappingRepository.findById(saved.id).orElseThrow()
+        val retrieved = payeeMappingRepository.findById(saved.id).orElseThrow().toDomain()
         assertThat(retrieved.actualPayeeName).isEqualTo("Amazon")
     }
 

@@ -4,7 +4,7 @@ import dev.naguiar.nbot.budget.domain.PayeeMapping
 import dev.naguiar.nbot.budget.domain.TransactionDraft
 import dev.naguiar.nbot.budget.domain.TransactionStatus
 import dev.naguiar.nbot.budget.infrastructure.config.ActualBudgetProperties
-import dev.naguiar.nbot.budget.infrastructure.db.PayeeMappingRepository
+import dev.naguiar.nbot.budget.domain.PayeeMappingRepository
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify

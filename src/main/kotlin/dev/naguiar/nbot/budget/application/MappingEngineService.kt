@@ -1,10 +1,10 @@
 package dev.naguiar.nbot.budget.application
 
+import dev.naguiar.nbot.budget.domain.PayeeMappingRepository
 import dev.naguiar.nbot.budget.domain.TransactionDraft
 import dev.naguiar.nbot.budget.domain.TransactionStatus
 import dev.naguiar.nbot.budget.infrastructure.api.generated.model.Payee
 import dev.naguiar.nbot.budget.infrastructure.config.ActualBudgetProperties
-import dev.naguiar.nbot.budget.infrastructure.db.PayeeMappingRepository
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 
