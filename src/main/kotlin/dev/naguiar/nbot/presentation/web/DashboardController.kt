@@ -25,6 +25,8 @@ class DashboardController(
     private val transactionDraftRepository: TransactionDraftRepository,
     private val actualBudgetService: ActualBudgetService,
     private val properties: ActualBudgetProperties,
+    private val templateEngine: org.thymeleaf.TemplateEngine,
+    private val sseBudgetEmitterService: SseBudgetEmitterService,
 ) {
     @GetMapping("/")
     fun index(): String = "redirect:/dashboard"
@@ -86,15 +88,54 @@ class DashboardController(
     }
 
     @PostMapping("/dashboard/budget/re-evaluate")
-    fun reEvaluateBudget(model: Model): String {
-        budgetImportService.reEvaluatePending()
-        return budgetFragment(model)
+    fun reEvaluateBudget(
+        @RequestParam(required = false) draftIds: List<UUID>?,
+        model: Model,
+    ): String {
+        if (draftIds.isNullOrEmpty()) {
+            return "fragments/budget :: reEvaluateButton"
+        }
+
+        budgetImportService.reEvaluateAsync(
+            draftIds = draftIds,
+            onProgress = { draft ->
+                val context =
+                    org.thymeleaf.context.Context().apply {
+                        setVariable("draft", draft)
+                        setVariable("oob", true)
+                    }
+                val html = templateEngine.process("fragments/budget :: draftRow", context)
+                sseBudgetEmitterService.broadcast(html)
+            },
+            onComplete = {
+                val context =
+                    org.thymeleaf.context
+                        .Context()
+                        .apply { setVariable("oob", true) }
+                val buttonHtml = templateEngine.process("fragments/budget :: reEvaluateButton", context)
+
+                val pendingDrafts = transactionDraftRepository.findByStatus(TransactionStatus.PENDING)
+                context.setVariable("drafts", pendingDrafts)
+                val badgeHtml = templateEngine.process("fragments/budget :: pendingBadge", context)
+
+                sseBudgetEmitterService.broadcast(buttonHtml + badgeHtml)
+            },
+        )
+
+        return "fragments/budget :: reEvaluateButton"
     }
 
     @GetMapping("/dashboard/logs/stream")
     fun logStream(): SseEmitter {
         val emitter = SseEmitter(-1L)
         logEmitterService.addEmitter(emitter)
+        return emitter
+    }
+
+    @GetMapping("/dashboard/budget/stream")
+    fun budgetStream(): SseEmitter {
+        val emitter = SseEmitter(-1L)
+        sseBudgetEmitterService.addEmitter(emitter)
         return emitter
     }
 }
