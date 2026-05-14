@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.multipart.MultipartFile
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter
-import java.util.*
+import java.util.UUID
 
 @Controller
 class DashboardController(

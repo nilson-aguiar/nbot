@@ -42,7 +42,15 @@ class SseLogbackAppenderTest {
 
         appender.doAppend(event)
 
-        verify { emitterService.broadcast(match { it.contains("text-red-500") && it.contains("Error message") && it.contains("[ERROR]") }) }
+        verify {
+            emitterService.broadcast(
+                match {
+                    it.contains("text-red-500") &&
+                        it.contains("Error message") &&
+                        it.contains("[ERROR]")
+                },
+            )
+        }
     }
 
     @Test
@@ -76,6 +84,14 @@ class SseLogbackAppenderTest {
 
         appender.doAppend(event)
 
-        verify { emitterService.broadcast(match { it.contains("text-green-500") && it.contains("Info message") && it.contains("[INFO]") }) }
+        verify {
+            emitterService.broadcast(
+                match {
+                    it.contains("text-green-500") &&
+                        it.contains("Info message") &&
+                        it.contains("[INFO]")
+                },
+            )
+        }
     }
 }

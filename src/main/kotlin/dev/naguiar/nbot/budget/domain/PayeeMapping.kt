@@ -2,7 +2,6 @@ package dev.naguiar.nbot.budget.domain
 
 import java.util.UUID
 
-
 data class PayeeMapping(
     val id: UUID = UUID.randomUUID(),
     val bankPattern: String,

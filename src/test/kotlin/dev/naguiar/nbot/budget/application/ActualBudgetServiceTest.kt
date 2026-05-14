@@ -23,7 +23,8 @@ class ActualBudgetServiceTest {
     private val accountsApi = mockk<AccountsApi>()
     private val payeesApi = mockk<PayeesApi>()
     private val transactionsApi = mockk<TransactionsApi>()
-    private val properties = ActualBudgetProperties(url = "http://localhost:5006", apiKey = "secret-key", syncId = "sync-123")
+    private val properties =
+        ActualBudgetProperties(url = "http://localhost:5006", apiKey = "secret-key", syncId = "sync-123")
     private val repository = mockk<TransactionDraftRepository>()
     private val service = ActualBudgetService(accountsApi, payeesApi, transactionsApi, properties, repository)
 
@@ -75,7 +76,14 @@ class ActualBudgetServiceTest {
                 exportFileId = "file-1",
             )
         every { repository.findByStatus(TransactionStatus.APPROVED) } returns listOf(draft)
-        every { transactionsApi.budgetsBudgetSyncIdAccountsAccountIdTransactionsBatchPost(any(), any(), any(), any()) } returns
+        every {
+            transactionsApi.budgetsBudgetSyncIdAccountsAccountIdTransactionsBatchPost(
+                any(),
+                any(),
+                any(),
+                any(),
+            )
+        } returns
             ResponseEntity.ok().build()
         every { repository.saveAll(any<List<TransactionDraft>>()) } returns listOf(draft)
 

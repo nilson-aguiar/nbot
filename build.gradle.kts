@@ -5,6 +5,7 @@ plugins {
     id("io.spring.dependency-management") version "1.1.7"
     kotlin("plugin.jpa") version "2.3.21"
     id("org.openapi.generator") version "7.22.0"
+    id("org.jlleitschuh.gradle.ktlint") version "14.2.0"
     jacoco
 }
 
@@ -101,6 +102,21 @@ tasks.jacocoTestCoverageVerification {
             exclude("dev/naguiar/nbot/budget/infrastructure/api/generated/**")
         },
     )
+}
+
+ktlint {
+    verbose.set(true)
+    outputToConsole.set(true)
+    coloredOutput.set(true)
+    reporters {
+        reporter(org.jlleitschuh.gradle.ktlint.reporter.ReporterType.PLAIN)
+    }
+    filter {
+        exclude { element ->
+            element.file.path.contains("/build/generated/") ||
+                element.file.path.contains("/generated/openapi/")
+        }
+    }
 }
 
 tasks.check {
