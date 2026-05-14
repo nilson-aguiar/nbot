@@ -40,7 +40,7 @@ nbot:
     sync-id: ${ACTUAL_BUDGET_SYNC_ID:}
     encryption-password: ${ACTUAL_BUDGET_ENCRYPTION_PASSWORD:}
     default-account-id: ${ACTUAL_BUDGET_DEFAULT_ACCOUNT_ID:}
-    internal-accounts: ${ACTUAL_BUDGET_INTERNAL_ACCOUNTS:Main account,Joint account,Month balance,Extras,Apolo,Nilson,Férias,Poupança,Mês seguinte,Renata}
+    internal-accounts: ${ACTUAL_BUDGET_INTERNAL_ACCOUNTS:}
 
 management:
   endpoints:

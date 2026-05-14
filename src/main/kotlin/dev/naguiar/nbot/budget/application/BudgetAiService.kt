@@ -20,7 +20,7 @@ class BudgetAiService(
                     You are a financial assistant helping to map bank transactions to budget payees.
                     Your task is to analyze a bank transaction and suggest the most likely payee from a provided list.
                     If the transaction appears to be a transfer between internal accounts, identify it as such.
-                    
+
                     Return your response in structured JSON format with the following fields:
                     - payeeId: The ID of the suggested payee from the list, or null if no match found.
                     - payeeName: The name of the suggested payee from the list, or null.
@@ -31,6 +31,15 @@ class BudgetAiService(
                     """.trimIndent(),
                 ).build()
         }
+
+    val mappingSystemPrompt =
+        """
+        The user will provide you information about a transaction and he needs you to be sharp on identifying the payee.
+        The user has multiple accounts on his bank so you should think if the name you identified isn't from the owner. If so, consider it as a transfer.
+
+        Be aware that the payee name, might refer a payment from Google Pay, if so, you should focus only on what you think it is the name of the payee, and ignore any unnecessary information from the payee name the user provided (like city, card number).
+        Be aware that bank information might be provided in Dutch.
+        """.trimIndent()
 
     fun suggestMapping(
         bankPayeeName: String,
@@ -45,18 +54,20 @@ class BudgetAiService(
             Analyze the following bank transaction:
             Bank Payee Name: $bankPayeeName
             Bank Description: $bankDescription
-            
+
             Known Payees:
             ${knownPayees.joinToString("\n") { "- ${it.name} (ID: ${it.id})" }}
-            
+
             Internal Accounts:
             ${internalAccounts.joinToString("\n") { "- ${it.name} (ID: ${it.id})" }}
-            
+
+
             Find the best match or identify if it's an internal transfer.
             """.trimIndent()
 
         return chatClient
             .prompt()
+            .system(mappingSystemPrompt)
             .user(promptText)
             .call()
             .entity(AiMappingResponse::class.java)

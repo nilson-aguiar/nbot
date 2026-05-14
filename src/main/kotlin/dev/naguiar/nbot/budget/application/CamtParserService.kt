@@ -1,15 +1,12 @@
 package dev.naguiar.nbot.budget.application
 
+import com.prowidesoftware.swift.model.mx.MxCamt05300102
+import com.prowidesoftware.swift.model.mx.dic.CreditDebitCode
+import com.prowidesoftware.swift.model.mx.dic.ReportEntry2
 import dev.naguiar.nbot.budget.domain.TransactionDraft
 import org.springframework.stereotype.Service
-import org.w3c.dom.Document
-import org.w3c.dom.NodeList
 import java.io.InputStream
-import java.math.BigDecimal
 import java.time.LocalDate
-import javax.xml.parsers.DocumentBuilderFactory
-import javax.xml.xpath.XPathConstants
-import javax.xml.xpath.XPathFactory
 
 @Service
 class CamtParserService {
@@ -17,77 +14,59 @@ class CamtParserService {
         inputStream: InputStream,
         exportFileId: String,
     ): List<TransactionDraft> {
-        val factory = DocumentBuilderFactory.newInstance()
-        factory.isNamespaceAware = false // Simplifies XPath if we don't care about namespaces
-        val builder = factory.newDocumentBuilder()
-        val doc: Document = builder.parse(inputStream)
-
-        val xpath = XPathFactory.newInstance().newXPath()
-        val entryNodes = xpath.evaluate("//Ntry", doc, XPathConstants.NODESET) as NodeList
-
+        val mx = MxCamt05300102.parse(inputStream.bufferedReader().readText())
         val transactions = mutableListOf<TransactionDraft>()
 
-        for (i in 0 until entryNodes.length) {
-            val entryNode = entryNodes.item(i)
+        mx.bkToCstmrStmt.stmt.forEach { stmt ->
+            stmt.ntry.forEach { entry ->
+                val bookingDate = findBookingDate(entry)
+                val amount = entry.amt.value
+                val cents = amount.movePointRight(2).toLong()
+                val finalAmount = if (entry.cdtDbtInd == CreditDebitCode.DBIT) -cents else cents
 
-            val amountStr = xpath.evaluate("Amt", entryNode)
-            val currency = xpath.evaluate("Amt/@Ccy", entryNode)
-            val indicator = xpath.evaluate("CdtDbtInd", entryNode)
+                val payeeName = findPayeeName(entry)
+                val description = findDescription(entry)
 
-            var bookingDateStr = xpath.evaluate("BookgDt/Dt", entryNode)
-            if (bookingDateStr.isNullOrBlank()) {
-                bookingDateStr = xpath.evaluate("BookgDt/DtTm", entryNode)
+                transactions.add(
+                    TransactionDraft(
+                        bookingDate = bookingDate,
+                        amount = finalAmount,
+                        currency = entry.amt.ccy,
+                        bankPayeeName = payeeName ?: "",
+                        bankDescription = description ?: "",
+                        exportFileId = exportFileId,
+                    ),
+                )
             }
-            if (bookingDateStr.isNullOrBlank()) {
-                // Fallback to value date if booking date is missing
-                bookingDateStr = xpath.evaluate("ValDt/Dt", entryNode)
-            }
-            if (bookingDateStr.isNullOrBlank()) {
-                bookingDateStr = xpath.evaluate("ValDt/DtTm", entryNode)
-            }
-
-            // Try to find payee name in Cdtr or Dbtr
-            var payeeName = xpath.evaluate("NtryDtls/TxDtls/RltdPties/Cdtr/Nm", entryNode)
-            if (payeeName.isNullOrBlank()) {
-                payeeName = xpath.evaluate("NtryDtls/TxDtls/RltdPties/Dbtr/Nm", entryNode)
-            }
-            if (payeeName.isNullOrBlank()) {
-                // Try outside TxDtls
-                payeeName = xpath.evaluate("RltdPties/Cdtr/Nm", entryNode)
-            }
-            if (payeeName.isNullOrBlank()) {
-                payeeName = xpath.evaluate("RltdPties/Dbtr/Nm", entryNode)
-            }
-
-            val description = xpath.evaluate("NtryDtls/TxDtls/RmtInf/Ustrd", entryNode)
-
-            val amount = if (amountStr.isNotBlank()) BigDecimal(amountStr) else BigDecimal.ZERO
-            val cents = amount.movePointRight(2).toLong()
-            val finalAmount = if (indicator == "DBIT") -cents else cents
-
-            val date =
-                try {
-                    if (bookingDateStr.length >= 10) {
-                        LocalDate.parse(bookingDateStr.substring(0, 10))
-                    } else {
-                        LocalDate.now()
-                    }
-                } catch (e: Exception) {
-                    LocalDate.now()
-                }
-
-            transactions.add(
-                TransactionDraft(
-                    bookingDate = date,
-                    amount = finalAmount,
-                    currency = currency,
-                    bankPayeeName = payeeName ?: "",
-                    bankDescription = description ?: "",
-                    exportFileId = exportFileId,
-                ),
-            )
         }
 
         return transactions
     }
+
+    private fun findBookingDate(entry: ReportEntry2): LocalDate =
+        entry.bookgDt?.dt ?: entry.bookgDt?.dtTm?.toLocalDate()
+            ?: entry.valDt?.dt ?: entry.valDt?.dtTm?.toLocalDate()
+            ?: LocalDate.now()
+
+    private fun findPayeeName(entry: ReportEntry2): String? {
+        entry.ntryDtls?.forEach { details ->
+            details.txDtls?.forEach { tx ->
+                tx.rltdPties?.let { parties ->
+                    parties.cdtr?.nm?.let { return it }
+                    parties.dbtr?.nm?.let { return it }
+                }
+            }
+        }
+
+        return entry.addtlNtryInf
+    }
+
+    private fun findDescription(entry: ReportEntry2): String? =
+        entry.ntryDtls
+            ?.firstOrNull()
+            ?.txDtls
+            ?.firstOrNull()
+            ?.rmtInf
+            ?.ustrd
+            ?.firstOrNull()
 }

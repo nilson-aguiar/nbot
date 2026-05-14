@@ -10,6 +10,7 @@
                 <BookgDt>
                     <Dt>2023-10-27</Dt>
                 </BookgDt>
+                <AddtlNtryInf>Entry info for supermarket</AddtlNtryInf>
                 <NtryDtls>
                     <TxDtls>
                         <RltdPties>
@@ -50,11 +51,16 @@
                 <BookgDt>
                     <DtTm>2023-10-29T10:00:00</DtTm>
                 </BookgDt>
-                <RltdPties>
-                    <Cdtr>
-                        <Nm>Coffee Shop</Nm>
-                    </Cdtr>
-                </RltdPties>
+                <AddtlNtryInf>Coffee break</AddtlNtryInf>
+                <NtryDtls>
+                    <TxDtls>
+                        <RltdPties>
+                            <Cdtr>
+                                <Nm>Coffee Shop</Nm>
+                            </Cdtr>
+                        </RltdPties>
+                    </TxDtls>
+                </NtryDtls>
             </Ntry>
         </Stmt>
     </BkToCstmrStmt>

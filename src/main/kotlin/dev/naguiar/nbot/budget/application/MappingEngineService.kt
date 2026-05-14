@@ -22,6 +22,8 @@ class MappingEngineService(
     ): TransactionDraft {
         val mappings = payeeMappingRepository.findAll()
 
+        log.info("Evaluating draft: ${draft.bankPayeeName}")
+
         for (mapping in mappings) {
             val regex = Regex(mapping.bankPattern, RegexOption.IGNORE_CASE)
 

@@ -29,8 +29,8 @@ services:
       - POSTGRES_USER=${POSTGRES_USER:-nbot}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-nbot_password}
       - POSTGRES_DB=${POSTGRES_DB:-nbot}
-    volumes:
-      - ./.docker_data/postgres18:/var/lib/postgresql/18/docker
+#    volumes:
+#      - ./.docker_data/postgres18:/var/lib/postgresql/18/docker
     ports:
       - "5432:5432"
     healthcheck:

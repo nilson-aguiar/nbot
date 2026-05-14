@@ -71,13 +71,7 @@ class BudgetImportService(
         val drafts = camtParserService.parse(protectedStream, exportFileId)
         logger.info("Parsed {} drafts from CAMT stream", drafts.size)
 
-        val mappedDrafts =
-            drafts.map { draft ->
-                mappingEngineService.applyMappings(draft)
-            }
-
-        transactionDraftRepository.saveAll(mappedDrafts)
-        logger.info("Saved {} drafts to repository", mappedDrafts.size)
+        transactionDraftRepository.saveAll(drafts)
     }
 }
 

@@ -9,17 +9,5 @@ data class ActualBudgetProperties(
     val syncId: String = "",
     val encryptionPassword: String = "",
     val defaultAccountId: String = "",
-    val internalAccounts: List<String> =
-        listOf(
-            "Main account",
-            "Joint account",
-            "Month balance",
-            "Extras",
-            "Apolo",
-            "Nilson",
-            "Férias",
-            "Poupança",
-            "Mês seguinte",
-            "Renata",
-        ),
+    val internalAccounts: List<String> = emptyList(),
 )

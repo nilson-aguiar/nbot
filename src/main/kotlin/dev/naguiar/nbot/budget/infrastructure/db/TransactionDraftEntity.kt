@@ -8,7 +8,7 @@ import jakarta.persistence.Enumerated
 import jakarta.persistence.Id
 import jakarta.persistence.Table
 import java.time.LocalDate
-import java.util.UUID
+import java.util.*
 
 @Entity
 @Table(name = "transaction_draft")
