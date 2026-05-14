@@ -113,7 +113,7 @@ ktlint {
     }
     filter {
         exclude { element ->
-            element.file.path.contains("/build/generated/") ||
+            element.file.path.contains("/build/") ||
                 element.file.path.contains("/generated/openapi/")
         }
     }
