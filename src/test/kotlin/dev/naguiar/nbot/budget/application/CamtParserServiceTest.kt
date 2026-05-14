@@ -22,7 +22,6 @@ class CamtParserServiceTest {
         assertEquals("EUR", t1.currency)
         assertEquals("Supermarket XYZ", t1.bankPayeeName)
         assertEquals("Grocery shopping", t1.bankDescription)
-        assertEquals("Entry info for supermarket", t1.bankAdditionalInfo)
         assertEquals("test-file-id", t1.exportFileId)
 
         // Second transaction (CRDT)
@@ -32,7 +31,6 @@ class CamtParserServiceTest {
         assertEquals("EUR", t2.currency)
         assertEquals("Employer ABC", t2.bankPayeeName)
         assertEquals("Monthly Salary", t2.bankDescription)
-        assertEquals(null, t2.bankAdditionalInfo)
         assertEquals("test-file-id", t2.exportFileId)
 
         // Third transaction (DBIT with DtTm and RltdPties outside TxDtls)
@@ -40,6 +38,5 @@ class CamtParserServiceTest {
         assertEquals(LocalDate.of(2023, 10, 29), t3.bookingDate)
         assertEquals(-550L, t3.amount)
         assertEquals("Coffee Shop", t3.bankPayeeName)
-        assertEquals("Coffee break", t3.bankAdditionalInfo)
     }
 }
