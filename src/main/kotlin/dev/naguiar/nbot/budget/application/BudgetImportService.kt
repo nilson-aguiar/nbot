@@ -6,7 +6,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.io.InputStream
-import java.util.UUID
+import java.util.*
 import java.util.zip.ZipInputStream
 
 @Service
@@ -41,7 +41,6 @@ class BudgetImportService(
         return exportFileId
     }
 
-    @Transactional
     fun reEvaluatePending() {
         logger.info("Starting re-evaluation of pending transactions")
         val pendingDrafts = transactionDraftRepository.findByStatus(TransactionStatus.PENDING)
