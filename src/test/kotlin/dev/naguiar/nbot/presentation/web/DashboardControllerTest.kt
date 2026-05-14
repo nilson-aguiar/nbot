@@ -22,6 +22,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.view
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import org.springframework.web.servlet.view.InternalResourceViewResolver
+import java.util.UUID
 
 class DashboardControllerTest {
     private val dataService = mockk<DashboardDataService>()
@@ -30,6 +31,8 @@ class DashboardControllerTest {
     private val transactionDraftRepository = mockk<TransactionDraftRepository>()
     private val actualBudgetService = mockk<ActualBudgetService>()
     private val properties = ActualBudgetProperties(defaultAccountId = "test-account")
+    private val templateEngine = mockk<org.thymeleaf.TemplateEngine>()
+    private val sseBudgetEmitterService = mockk<SseBudgetEmitterService>(relaxed = true)
     private val controller =
         DashboardController(
             dataService,
@@ -38,6 +41,8 @@ class DashboardControllerTest {
             transactionDraftRepository,
             actualBudgetService,
             properties,
+            templateEngine,
+            sseBudgetEmitterService,
         )
     private val mockMvc =
         MockMvcBuilders
@@ -130,6 +135,22 @@ class DashboardControllerTest {
     }
 
     @Test
+    fun `should approve draft and return budget fragment`() {
+        val id = UUID.randomUUID()
+        every { transactionDraftRepository.findById(id) } returns mockk(relaxed = true)
+        every { transactionDraftRepository.save(any()) } returns mockk()
+        every { transactionDraftRepository.findByStatus(TransactionStatus.PENDING) } returns emptyList()
+
+        mockMvc
+            .perform(post("/dashboard/budget/approve/$id"))
+            .andExpect(status().isOk)
+            .andExpect(view().name("fragments/budget :: budget"))
+            .andExpect(model().attributeExists("drafts"))
+
+        verify { transactionDraftRepository.save(any()) }
+    }
+
+    @Test
     fun `should sync budget and return budget fragment`() {
         every { actualBudgetService.syncApprovedDrafts("test-account") } returns Unit
         every { transactionDraftRepository.findByStatus(TransactionStatus.PENDING) } returns emptyList()
@@ -142,21 +163,39 @@ class DashboardControllerTest {
     }
 
     @Test
-    fun `should re-evaluate budget and return budget fragment`() {
-        every { budgetImportService.reEvaluatePending() } returns Unit
-        every { transactionDraftRepository.findByStatus(TransactionStatus.PENDING) } returns emptyList()
+    fun `should trigger async re-evaluation and return fragment`() {
+        val draftIds = listOf(UUID.randomUUID())
+        every { budgetImportService.reEvaluateAsync(any(), any(), any()) } returns Unit
 
+        mockMvc
+            .perform(
+                post("/dashboard/budget/re-evaluate")
+                    .param("draftIds", draftIds[0].toString()),
+            ).andExpect(status().isOk)
+            .andExpect(view().name("fragments/budget :: reEvaluateButton"))
+
+        verify { budgetImportService.reEvaluateAsync(eq(draftIds), any(), any()) }
+    }
+
+    @Test
+    fun `should return reEvaluateButton if draftIds is empty`() {
         mockMvc
             .perform(post("/dashboard/budget/re-evaluate"))
             .andExpect(status().isOk)
-            .andExpect(view().name("fragments/budget :: budget"))
-            .andExpect(model().attributeExists("drafts"))
+            .andExpect(view().name("fragments/budget :: reEvaluateButton"))
     }
 
     @Test
     fun `should return log stream emitter`() {
         mockMvc
             .perform(get("/dashboard/logs/stream"))
+            .andExpect(status().isOk)
+    }
+
+    @Test
+    fun `should return budget stream emitter`() {
+        mockMvc
+            .perform(get("/dashboard/budget/stream"))
             .andExpect(status().isOk)
     }
 }
