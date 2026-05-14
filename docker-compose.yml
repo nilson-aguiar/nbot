@@ -1,36 +1,36 @@
 services:
-  app:
-    build: .
-    ports:
-      - "8080:8080"
-    environment:
-      - SPRING_PROFILES_ACTIVE=ollama
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/${POSTGRES_DB:-nbot}
-      - SPRING_DATASOURCE_USERNAME=${POSTGRES_USER:-nbot}
-      - SPRING_DATASOURCE_PASSWORD=${POSTGRES_PASSWORD:-nbot_password}
-      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
-      - ALLOWED_USERS=${ALLOWED_USERS}
-      - GEMINI_API_KEY=${GEMINI_API_KEY}
-      - QBITTORRENT_URL=http://qbittorrent:8080
-      - QBITTORRENT_USERNAME=${QBITTORRENT_USERNAME:-admin}
-      - QBITTORRENT_PASSWORD=${QBITTORRENT_PASSWORD:-adminadmin}
-      - ACTUAL_BUDGET_URL=http://actual-api:5007
-      - ACTUAL_BUDGET_API_KEY=${ACTUAL_BUDGET_API_KEY:-nbot_secret}
-      - ACTUAL_BUDGET_DEFAULT_ACCOUNT_ID=${ACTUAL_BUDGET_DEFAULT_ACCOUNT_ID:}
-    depends_on:
-      db:
-        condition: service_healthy
-      actual-api:
-        condition: service_started
+#  app:
+#    build: .
+#    ports:
+#      - "8080:8080"
+#    environment:
+#      - SPRING_PROFILES_ACTIVE=ollama
+#      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/${POSTGRES_DB:-nbot}
+#      - SPRING_DATASOURCE_USERNAME=${POSTGRES_USER:-nbot}
+#      - SPRING_DATASOURCE_PASSWORD=${POSTGRES_PASSWORD:-nbot_password}
+#      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+#      - ALLOWED_USERS=${ALLOWED_USERS}
+#      - GEMINI_API_KEY=${GEMINI_API_KEY}
+#      - QBITTORRENT_URL=http://qbittorrent:8080
+#      - QBITTORRENT_USERNAME=${QBITTORRENT_USERNAME:-admin}
+#      - QBITTORRENT_PASSWORD=${QBITTORRENT_PASSWORD:-adminadmin}
+#      - ACTUAL_BUDGET_URL=http://actual-api:5007
+#      - ACTUAL_BUDGET_API_KEY=${ACTUAL_BUDGET_API_KEY:-nbot_secret}
+#      - ACTUAL_BUDGET_DEFAULT_ACCOUNT_ID=${ACTUAL_BUDGET_DEFAULT_ACCOUNT_ID:-1}
+#    depends_on:
+#      db:
+#        condition: service_healthy
+#      actual-api:
+#        condition: service_started
 
   db:
-    image: postgres:18-alpine
+    image: postgres:18
     environment:
       - POSTGRES_USER=${POSTGRES_USER:-nbot}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-nbot_password}
       - POSTGRES_DB=${POSTGRES_DB:-nbot}
     volumes:
-      - ./.docker_data/postgres:/var/lib/postgresql/data
+      - ./.docker_data/postgres18:/var/lib/postgresql/18/docker
     ports:
       - "5432:5432"
     healthcheck:

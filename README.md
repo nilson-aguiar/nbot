@@ -32,7 +32,7 @@ The next phase of development will re-enable and expand the AI capabilities:
 ## 💻 Local Development
 
 ### Prerequisites
-- JDK 21+
+- JDK 25+
 - Docker & Docker Compose
 
 ### Running Locally

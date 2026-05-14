@@ -3,6 +3,7 @@ package dev.naguiar.nbot.budget.application
 import dev.naguiar.nbot.budget.domain.PayeeMapping
 import dev.naguiar.nbot.budget.domain.TransactionDraft
 import dev.naguiar.nbot.budget.domain.TransactionStatus
+import dev.naguiar.nbot.budget.infrastructure.api.generated.model.Payee
 import dev.naguiar.nbot.budget.infrastructure.config.ActualBudgetProperties
 import dev.naguiar.nbot.budget.infrastructure.db.PayeeMappingRepository
 import org.slf4j.LoggerFactory
@@ -16,7 +17,7 @@ class MappingEngineService(
 ) {
     private val log = LoggerFactory.getLogger(MappingEngineService::class.java)
 
-    fun applyMappings(draft: TransactionDraft, payees: List<dev.naguiar.nbot.budget.infrastructure.api.ActualPayee> = emptyList()) {
+    fun applyMappings(draft: TransactionDraft, payees: List<Payee> = emptyList()) {
         val mappings = payeeMappingRepository.findAll()
         
         for (mapping in mappings) {
@@ -36,7 +37,7 @@ class MappingEngineService(
             }
             
             val knownPayees = payees.map { 
-                BudgetAiService.ActualPayee(it.id, it.name)
+                BudgetAiService.ActualPayee(it.id ?: "", it.name)
             }
             
             val aiResponse = budgetAiService.suggestMapping(

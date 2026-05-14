@@ -1,7 +1,10 @@
 package dev.naguiar.nbot.budget.application
 
 import dev.naguiar.nbot.budget.domain.TransactionStatus
-import dev.naguiar.nbot.budget.infrastructure.api.*
+import dev.naguiar.nbot.budget.infrastructure.api.generated.AccountsApi
+import dev.naguiar.nbot.budget.infrastructure.api.generated.PayeesApi
+import dev.naguiar.nbot.budget.infrastructure.api.generated.TransactionsApi
+import dev.naguiar.nbot.budget.infrastructure.api.generated.model.*
 import dev.naguiar.nbot.budget.infrastructure.config.ActualBudgetProperties
 import dev.naguiar.nbot.budget.infrastructure.db.TransactionDraftRepository
 import org.slf4j.LoggerFactory
@@ -9,28 +12,31 @@ import org.springframework.stereotype.Service
 
 @Service
 class ActualBudgetService(
-    private val actualBudgetApi: ActualBudgetApi,
+    private val accountsApi: AccountsApi,
+    private val payeesApi: PayeesApi,
+    private val transactionsApi: TransactionsApi,
     private val properties: ActualBudgetProperties,
     private val transactionDraftRepository: TransactionDraftRepository
 ) {
     private val log = LoggerFactory.getLogger(ActualBudgetService::class.java)
+    private val encryptionPassword = properties.encryptionPassword.takeIf { it.isNotBlank() }
 
-    fun getAccounts(): List<ActualAccount> {
+    fun getAccounts(): List<Account> {
         log.info("Fetching accounts from Actual Budget")
         return try {
-            val response = actualBudgetApi.getAccounts(properties.apiKey, properties.syncId)
-            response.data
+            val response = accountsApi.budgetsBudgetSyncIdAccountsGet(properties.syncId, encryptionPassword)
+            response.body?.data ?: emptyList()
         } catch (e: Exception) {
             log.error("Failed to fetch accounts from Actual Budget", e)
             emptyList()
         }
     }
 
-    fun getPayees(): List<ActualPayee> {
+    fun getPayees(): List<Payee> {
         log.info("Fetching payees from Actual Budget")
         return try {
-            val response = actualBudgetApi.getPayees(properties.apiKey, properties.syncId)
-            response.data
+            val response = payeesApi.budgetsBudgetSyncIdPayeesGet(properties.syncId, encryptionPassword)
+            response.body?.data ?: emptyList()
         } catch (e: Exception) {
             log.error("Failed to fetch payees from Actual Budget", e)
             emptyList()
@@ -51,19 +57,28 @@ class ActualBudgetService(
         }
 
         val actualTransactions = approvedDrafts.map { draft ->
-            ActualTransaction(
-                accountId = accountId,
+            Transaction(
+                account = accountId,
                 date = draft.bookingDate.toString(),
-                amount = draft.amount,
-                payeeId = draft.suggestedPayeeId,
-                payeeName = draft.suggestedPayeeName,
-                notes = draft.bankDescription
+                amount = draft.amount.toInt(),
+                payee = draft.suggestedPayeeId,
+                payeeName = if (draft.suggestedPayeeId == null) draft.suggestedPayeeName else null,
+                notes = draft.bankDescription,
+                cleared = "true"
             )
         }
 
         try {
-            val request = ActualTransactionRequest(actualTransactions)
-            actualBudgetApi.addTransactions(properties.apiKey, properties.syncId, accountId, request)
+            val request = BudgetsBudgetSyncIdAccountsAccountIdTransactionsBatchPostRequest(
+                transactions = actualTransactions,
+                learnCategories = true
+            )
+            transactionsApi.budgetsBudgetSyncIdAccountsAccountIdTransactionsBatchPost(
+                properties.syncId, 
+                accountId, 
+                request, 
+                encryptionPassword
+            )
             
             approvedDrafts.forEach { draft ->
                 draft.status = TransactionStatus.SYNCED

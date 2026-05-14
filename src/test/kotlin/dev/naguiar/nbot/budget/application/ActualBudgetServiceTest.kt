@@ -2,7 +2,10 @@ package dev.naguiar.nbot.budget.application
 
 import dev.naguiar.nbot.budget.domain.TransactionDraft
 import dev.naguiar.nbot.budget.domain.TransactionStatus
-import dev.naguiar.nbot.budget.infrastructure.api.*
+import dev.naguiar.nbot.budget.infrastructure.api.generated.AccountsApi
+import dev.naguiar.nbot.budget.infrastructure.api.generated.PayeesApi
+import dev.naguiar.nbot.budget.infrastructure.api.generated.TransactionsApi
+import dev.naguiar.nbot.budget.infrastructure.api.generated.model.*
 import dev.naguiar.nbot.budget.infrastructure.config.ActualBudgetProperties
 import dev.naguiar.nbot.budget.infrastructure.db.TransactionDraftRepository
 import io.mockk.every
@@ -15,17 +18,21 @@ import java.time.LocalDate
 
 class ActualBudgetServiceTest {
 
-    private val api = mockk<ActualBudgetApi>()
+    private val accountsApi = mockk<AccountsApi>()
+    private val payeesApi = mockk<PayeesApi>()
+    private val transactionsApi = mockk<TransactionsApi>()
     private val properties = ActualBudgetProperties(url = "http://localhost:5006", apiKey = "secret-key", syncId = "sync-123")
     private val repository = mockk<TransactionDraftRepository>()
-    private val service = ActualBudgetService(api, properties, repository)
+    private val service = ActualBudgetService(accountsApi, payeesApi, transactionsApi, properties, repository)
 
     @Test
     fun `should fetch accounts successfully`() {
         val expectedAccounts = listOf(
-            ActualAccount("1", "Main Account", "bank", offbudget = false, closed = false)
+            Account(closed = false, id = "1", name = "Main Account", offbudget = false)
         )
-        every { api.getAccounts("secret-key", "sync-123") } returns ActualAccountResponse(expectedAccounts)
+        every { accountsApi.budgetsBudgetSyncIdAccountsGet("sync-123", null) } returns ResponseEntity.ok(
+            BudgetsBudgetSyncIdAccountsGet200Response(expectedAccounts)
+        )
 
         val result = service.getAccounts()
 
@@ -36,9 +43,11 @@ class ActualBudgetServiceTest {
     @Test
     fun `should fetch payees successfully`() {
         val expectedPayees = listOf(
-            ActualPayee("p1", "Amazon")
+            Payee(name = "Amazon", id = "p1")
         )
-        every { api.getPayees("secret-key", "sync-123") } returns ActualPayeeResponse(expectedPayees)
+        every { payeesApi.budgetsBudgetSyncIdPayeesGet("sync-123", null) } returns ResponseEntity.ok(
+            BudgetsBudgetSyncIdPayeesGet200Response(expectedPayees)
+        )
 
         val result = service.getPayees()
 
@@ -59,14 +68,14 @@ class ActualBudgetServiceTest {
             exportFileId = "file-1"
         )
         every { repository.findByStatus(TransactionStatus.APPROVED) } returns listOf(draft)
-        every { api.addTransactions(any(), any(), any(), any()) } returns ResponseEntity.ok().build()
+        every { transactionsApi.budgetsBudgetSyncIdAccountsAccountIdTransactionsBatchPost(any(), any(), any(), any()) } returns ResponseEntity.ok().build()
         every { repository.saveAll(any<List<TransactionDraft>>()) } returns listOf(draft)
 
         service.syncApprovedDrafts("account-456")
 
-        verify { api.addTransactions("secret-key", "sync-123", "account-456", match { 
-            it.transactions.size == 1 && it.transactions[0].accountId == "account-456" 
-        }) }
+        verify { transactionsApi.budgetsBudgetSyncIdAccountsAccountIdTransactionsBatchPost("sync-123", "account-456", match { 
+            it.transactions.size == 1 && it.transactions[0].account == "account-456" 
+        }, null) }
         verify { repository.saveAll(match<List<TransactionDraft>> { it[0].status == TransactionStatus.SYNCED }) }
     }
 }
