@@ -1,5 +1,5 @@
-<div th:fragment="budget" class="flex flex-col gap-6">
-    <!-- Upload Section -->
+<div th:fragment="budget" class="flex flex-col gap-6" hx-ext="sse" sse-connect="/dashboard/budget/stream">
+    <!-- Upload Section remains unchanged -->
     <div class="card p-6">
         <h2 class="text-sm font-semibold uppercase tracking-wider text-gray-400 mb-4">Import Transactions (CAMT / ZIP)</h2>
         <form hx-post="/dashboard/budget/upload" hx-encoding="multipart/form-data" hx-target="#main-content" class="flex gap-4">
@@ -12,56 +12,70 @@
 
     <!-- Pending Drafts -->
     <div class="card flex-grow flex flex-col overflow-hidden">
-        <div class="p-4 border-b border-gray-700 flex justify-between items-center">
-            <h2 class="text-sm font-semibold uppercase tracking-wider text-gray-400">Pending Transaction Drafts</h2>
-            <div class="flex gap-4 items-center">
-                <button hx-post="/dashboard/budget/re-evaluate" 
-                        hx-target="#main-content"
-                        class="bg-purple-600 hover:bg-purple-700 text-white px-3 py-1 rounded text-xs font-medium transition-colors">
-                    Re-evaluate AI
-                </button>
-                <button hx-post="/dashboard/budget/sync" 
-                        hx-target="#main-content"
-                        class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-xs font-medium transition-colors">
-                    Sync to Actual
-                </button>
-                <span class="bg-yellow-900 text-yellow-200 text-xs px-2 py-1 rounded-full" th:text="${#lists.size(drafts) + ' pending'}">0 pending</span>
+        <form hx-post="/dashboard/budget/re-evaluate" hx-target="#re-evaluate-action" hx-swap="outerHTML">
+            <div class="p-4 border-b border-gray-700 flex justify-between items-center">
+                <h2 class="text-sm font-semibold uppercase tracking-wider text-gray-400">Pending Transaction Drafts</h2>
+                <div class="flex gap-4 items-center">
+                    <div th:fragment="reEvaluateButton" id="re-evaluate-action">
+                        <button type="submit"
+                                th:if="${!@budgetImportService.isEvaluating.get()}"
+                                class="bg-purple-600 hover:bg-purple-700 text-white px-3 py-1 rounded text-xs font-medium transition-colors">
+                            Re-evaluate AI
+                        </button>
+                        <button disabled
+                                th:if="${@budgetImportService.isEvaluating.get()}"
+                                class="bg-gray-600 text-gray-400 px-3 py-1 rounded text-xs font-medium cursor-not-allowed">
+                            Evaluating...
+                        </button>
+                    </div>
+                    <button hx-post="/dashboard/budget/sync" 
+                            hx-target="#main-content"
+                            type="button"
+                            class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-xs font-medium transition-colors">
+                        Sync to Actual
+                    </button>
+                    <span th:fragment="pendingBadge" id="pending-badge" th:attr="hx-swap-oob=${oob == true ? 'true' : null}" class="bg-yellow-900 text-yellow-200 text-xs px-2 py-1 rounded-full" th:text="${#lists.size(drafts) + ' pending'}">0 pending</span>
+                </div>
             </div>
-        </div>
-        <div class="overflow-x-auto">
-            <table class="w-full text-left text-sm">
-                <thead class="bg-[#0d1117] text-gray-400 uppercase text-xs">
-                    <tr>
-                        <th class="p-4">Date</th>
-                        <th class="p-4">Amount</th>
-                        <th class="p-4">Bank Payee / Description</th>
-                        <th class="p-4">Suggested Payee</th>
-                        <th class="p-4 text-right">Actions</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-gray-800">
-                    <tr th:each="draft : ${drafts}" class="hover:bg-gray-800/50 transition-colors">
-                        <td class="p-4 font-mono" th:text="${draft.bookingDate}">2024-05-10</td>
-                        <td class="p-4 font-mono" th:classappend="${draft.amount < 0 ? 'text-red-400' : 'text-green-400'}" 
-                            th:text="${(draft.amount / 100.0) + ' ' + draft.currency}">-50.00 EUR</td>
-                        <td class="p-4">
-                            <div class="font-medium" th:text="${draft.bankPayeeName}">Bank Payee</div>
-                            <div class="text-xs text-gray-500 truncate max-w-xs" th:text="${draft.bankDescription}">Description</div>
-                        </td>
-                        <td class="p-4">
-                            <div class="text-blue-400" th:text="${draft.suggestedPayeeName ?: 'None'}">Suggested</div>
-                        </td>
-                        <td class="p-4 text-right">
-                            <button th:hx-post="'/dashboard/budget/approve/' + ${draft.id}" 
-                                    hx-target="#main-content"
-                                    class="text-green-400 hover:text-green-300 font-medium">Approve</button>
-                        </td>
-                    </tr>
-                    <tr th:if="${#lists.isEmpty(drafts)}">
-                        <td colspan="5" class="p-8 text-center text-gray-500 italic">No pending drafts found.</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm">
+                    <thead class="bg-[#0d1117] text-gray-400 uppercase text-xs">
+                        <tr>
+                            <th class="p-4"><input type="checkbox" onchange="document.querySelectorAll('.draft-checkbox').forEach(cb => cb.checked = this.checked)"></th>
+                            <th class="p-4">Date</th>
+                            <th class="p-4">Amount</th>
+                            <th class="p-4">Bank Payee / Description</th>
+                            <th class="p-4">Suggested Payee</th>
+                            <th class="p-4 text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-800">
+                        <tr th:each="draft : ${drafts}" th:replace="~{fragments/budget :: draftRow}"></tr>
+                        <tr th:if="${#lists.isEmpty(drafts)}">
+                            <td colspan="6" class="p-8 text-center text-gray-500 italic">No pending drafts found.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </form>
     </div>
 </div>
+
+<tr th:fragment="draftRow" th:id="'draft-row-' + ${draft.id}" th:attr="hx-swap-oob=${oob == true ? 'true' : null}" class="hover:bg-gray-800/50 transition-colors">
+    <td class="p-4"><input type="checkbox" name="draftIds" th:value="${draft.id}" class="draft-checkbox"></td>
+    <td class="p-4 font-mono" th:text="${draft.bookingDate}">2024-05-10</td>
+    <td class="p-4 font-mono" th:classappend="${draft.amount < 0 ? 'text-red-400' : 'text-green-400'}" 
+        th:text="${(draft.amount / 100.0) + ' ' + draft.currency}">-50.00 EUR</td>
+    <td class="p-4">
+        <div class="font-medium" th:text="${draft.bankPayeeName}">Bank Payee</div>
+        <div class="text-xs text-gray-500 truncate max-w-xs" th:text="${draft.bankDescription}">Description</div>
+    </td>
+    <td class="p-4">
+        <div class="text-blue-400" th:text="${draft.suggestedPayeeName ?: 'None'}">Suggested</div>
+    </td>
+    <td class="p-4 text-right">
+        <button type="button" th:hx-post="'/dashboard/budget/approve/' + ${draft.id}" 
+                hx-target="#main-content"
+                class="text-green-400 hover:text-green-300 font-medium">Approve</button>
+    </td>
+</tr>
