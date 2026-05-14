@@ -9,6 +9,9 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import java.io.InputStream
 import java.time.LocalDate
+import java.util.UUID
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
 
 class BudgetImportServiceTest {
     private val camtParserService = mockk<CamtParserService>()
@@ -32,8 +35,6 @@ class BudgetImportServiceTest {
         val drafts = listOf(draft1, draft2)
 
         every { camtParserService.parse(any<InputStream>(), any()) } returns drafts
-        every { mappingEngineService.applyMappings(draft1) } returns draft1
-        every { mappingEngineService.applyMappings(draft2) } returns draft2
         every { transactionDraftRepository.saveAll(drafts) } returns drafts
 
         // When
@@ -42,8 +43,6 @@ class BudgetImportServiceTest {
         // Then
         assertThat(exportFileId).isNotNull()
         verify { camtParserService.parse(any<InputStream>(), exportFileId) }
-        verify { mappingEngineService.applyMappings(draft1) }
-        verify { mappingEngineService.applyMappings(draft2) }
         verify { transactionDraftRepository.saveAll(drafts) }
     }
 
@@ -56,4 +55,31 @@ class BudgetImportServiceTest {
             bankDescription = "Description",
             exportFileId = "temp-id",
         )
+
+    @Test
+    fun `reEvaluateAsync processes sequentially and manages lock`() {
+        val draftId = UUID.randomUUID()
+        val latch = CountDownLatch(1)
+        var processedCount = 0
+
+        // Mocking behavior
+        every { actualBudgetService.getPayees() } returns emptyList()
+        val pendingDraft =
+            createDraft(
+                "Netflix",
+            ).copy(status = dev.naguiar.nbot.budget.domain.TransactionStatus.PENDING)
+        every { transactionDraftRepository.findById(draftId) } returns pendingDraft
+        every { mappingEngineService.applyMappings(any(), any()) } returns pendingDraft
+        every { transactionDraftRepository.save(any()) } returns pendingDraft
+
+        budgetImportService.reEvaluateAsync(
+            draftIds = listOf(draftId),
+            onProgress = { processedCount++ },
+            onComplete = { latch.countDown() },
+        )
+
+        latch.await(5, TimeUnit.SECONDS)
+        assertThat(budgetImportService.isEvaluating.get()).isFalse()
+        assertThat(processedCount).isEqualTo(1)
+    }
 }

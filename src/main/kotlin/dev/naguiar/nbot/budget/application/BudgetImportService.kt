@@ -6,7 +6,8 @@ import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.io.InputStream
-import java.util.*
+import java.util.UUID
+import java.util.concurrent.atomic.AtomicBoolean
 import java.util.zip.ZipInputStream
 
 @Service
@@ -17,6 +18,36 @@ class BudgetImportService(
     private val actualBudgetService: ActualBudgetService,
 ) {
     private val logger = LoggerFactory.getLogger(BudgetImportService::class.java)
+
+    val isEvaluating = AtomicBoolean(false)
+
+    fun reEvaluateAsync(
+        draftIds: List<UUID>,
+        onProgress: (dev.naguiar.nbot.budget.domain.TransactionDraft) -> Unit,
+        onComplete: () -> Unit,
+    ) {
+        if (draftIds.isEmpty() || !isEvaluating.compareAndSet(false, true)) {
+            return
+        }
+
+        Thread {
+            try {
+                val payees = actualBudgetService.getPayees()
+                for (id in draftIds) {
+                    transactionDraftRepository.findById(id)?.let { draft ->
+                        if (draft.status == dev.naguiar.nbot.budget.domain.TransactionStatus.PENDING) {
+                            val updatedDraft = mappingEngineService.applyMappings(draft, payees)
+                            transactionDraftRepository.save(updatedDraft)
+                            onProgress(updatedDraft)
+                        }
+                    }
+                }
+            } finally {
+                isEvaluating.set(false)
+                onComplete()
+            }
+        }.start()
+    }
 
     @Transactional
     fun importCamt(inputStream: InputStream): String {
