@@ -12,7 +12,7 @@
 
 ## 🛠 Tech Stack
 
-- **Backend**: Kotlin 2.x, Java 25, Spring Boot 3.5.x
+- **Backend**: Kotlin 2.x, Java 25, Spring Boot 3.5.x (following Clean Architecture principles)
 - **Frontend**: HTMX, Thymeleaf, Tailwind CSS (via CDN)
 - **Infrastructure**: Docker, Docker Compose, Helm (Kubernetes)
 - **CI/CD**: GitHub Actions

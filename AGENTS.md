@@ -43,3 +43,4 @@ The application follows a Clean Code structure with feature-based packaging.
 4. **Resiliency**: Services depending on AI should use `ObjectProvider` or null-checks to ensure the application starts even if AI profiles are inactive.
 5. **Testing**: New features require unit tests (MockK) and, if they touch the database, integration tests (Testcontainers).
 6. **OpenAPI**: The Actual Budget API client is generated from `src/main/resources/api/actual-budget-swagger.json`. Do not edit files in `infrastructure/api/generated` manually. Run `./gradlew openApiGenerate` if the spec changes.
+7. **Domain-Persistence Separation**: For entities with complex logic or requiring immutability (like `TransactionDraft`), separate the pure domain model (`data class`) from the JPA entity (`class`). Use repository adapters to manage mapping between these layers.
