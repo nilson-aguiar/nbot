@@ -1,17 +1,14 @@
 package dev.naguiar.nbot.budget.domain
 
-import jakarta.persistence.Entity
-import jakarta.persistence.Id
-import java.util.*
+import java.util.UUID
 
-@Entity
-class PayeeMapping(
-    @Id
+
+data class PayeeMapping(
     val id: UUID = UUID.randomUUID(),
-    var bankPattern: String,
-    var actualPayeeName: String,
-    var actualPayeeId: String,
-    var isInternalTransfer: Boolean = false,
-    var targetAccountId: String? = null,
-    var confidenceScore: Float = 1.0f,
+    val bankPattern: String,
+    val actualPayeeName: String,
+    val actualPayeeId: String,
+    val isInternalTransfer: Boolean = false,
+    val targetAccountId: String? = null,
+    val confidenceScore: Float = 1.0f,
 )
