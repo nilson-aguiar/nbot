@@ -148,3 +148,11 @@ openApiGenerate {
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
     dependsOn(tasks.openApiGenerate)
 }
+
+tasks.withType<org.jlleitschuh.gradle.ktlint.tasks.BaseKtLintCheckTask> {
+    mustRunAfter(tasks.openApiGenerate)
+}
+
+tasks.withType<org.jlleitschuh.gradle.ktlint.tasks.KtLintFormatTask> {
+    mustRunAfter(tasks.openApiGenerate)
+}
