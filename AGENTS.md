@@ -20,9 +20,9 @@ Welcome! If you are an AI assistant helping with `<nbot>`, read these guidelines
 The application follows a Clean Code structure with feature-based packaging.
 
 - **`/budget`**: Module for financial integration.
-    - `domain`: Entities (`PayeeMapping`, `TransactionDraft`) and Enums.
+    - `domain`: Immutable domain models (`TransactionDraft`, `PayeeMapping`), repository interfaces, and Enums.
     - `application`: Core logic including `CamtParserService` (XML), `MappingEngineService` (Regex + AI), and `BudgetAiService`.
-    - `infrastructure`: Generated Spring HTTP Interfaces (via OpenAPI Generator) and JPA repositories.
+    - `infrastructure`: Persistence entities (`TransactionDraftEntity`, `PayeeMappingEntity`), repository adapters, and generated Spring HTTP Interfaces.
 - **`/presentation/telegram`**: Entry point for Telegram updates. Handles both torrent documents and CAMT.053 XML bank statements.
 - **`/presentation/web`**: Web controllers. The `DashboardController` includes a dedicated "Budget" view.
 - **`/infrastructure`**: Shared infrastructure like configuration, security, and the custom `SseLogbackAppender` for live dashboard logs.
