@@ -84,7 +84,7 @@ tasks.jacocoTestReport {
     classDirectories.setFrom(
         sourceSets.main.get().output.asFileTree.matching {
             exclude("dev/naguiar/nbot/budget/infrastructure/api/generated/**")
-        }
+        },
     )
 }
 
@@ -99,7 +99,7 @@ tasks.jacocoTestCoverageVerification {
     classDirectories.setFrom(
         sourceSets.main.get().output.asFileTree.matching {
             exclude("dev/naguiar/nbot/budget/infrastructure/api/generated/**")
-        }
+        },
     )
 }
 
@@ -111,7 +111,12 @@ openApiGenerate {
     generatorName.set("kotlin-spring")
     library.set("spring-declarative-http-interface")
     inputSpec.set("$projectDir/src/main/resources/api/actual-budget-swagger.json")
-    outputDir.set(layout.buildDirectory.dir("generated/openapi").get().asFile.absolutePath)
+    outputDir.set(
+        layout.buildDirectory
+            .dir("generated/openapi")
+            .get()
+            .asFile.absolutePath,
+    )
     apiPackage.set("dev.naguiar.nbot.budget.infrastructure.api.generated")
     modelPackage.set("dev.naguiar.nbot.budget.infrastructure.api.generated.model")
     validateSpec.set(true)
@@ -119,12 +124,11 @@ openApiGenerate {
         mapOf(
             "useSpringBoot3" to "true",
             "useBeanValidation" to "true",
-            "enumPropertyNaming" to "original"
-        )
+            "enumPropertyNaming" to "original",
+        ),
     )
 }
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
     dependsOn(tasks.openApiGenerate)
 }
-

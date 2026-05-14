@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service
 @Service
 class LearningService(
     private val actualBudgetService: ActualBudgetService,
-    private val payeeMappingRepository: PayeeMappingRepository
+    private val payeeMappingRepository: PayeeMappingRepository,
 ) {
     private val log = LoggerFactory.getLogger(LearningService::class.java)
 

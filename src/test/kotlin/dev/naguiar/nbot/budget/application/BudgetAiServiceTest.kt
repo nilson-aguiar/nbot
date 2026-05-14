@@ -14,7 +14,6 @@ import org.springframework.ai.chat.model.ChatModel
 import org.springframework.beans.factory.ObjectProvider
 
 class BudgetAiServiceTest {
-
     private val chatModel: ChatModel = mockk()
     private val chatModelProvider: ObjectProvider<ChatModel> = mockk()
     private val properties = ActualBudgetProperties()
@@ -36,14 +35,15 @@ class BudgetAiServiceTest {
     @Test
     fun `should suggest mapping correctly`() {
         // Given
-        val expectedResponse = BudgetAiService.AiMappingResponse(
-            payeeId = "payee-123",
-            payeeName = "Netflix",
-            isTransfer = false,
-            targetAccountId = null,
-            confidence = 0.95f,
-            reasoning = "Matches Netflix exactly"
-        )
+        val expectedResponse =
+            BudgetAiService.AiMappingResponse(
+                payeeId = "payee-123",
+                payeeName = "Netflix",
+                isTransfer = false,
+                targetAccountId = null,
+                confidence = 0.95f,
+                reasoning = "Matches Netflix exactly",
+            )
 
         every { chatModelProvider.getIfAvailable() } returns chatModel
         every { chatModelProvider.ifAvailable } returns chatModel
@@ -59,12 +59,13 @@ class BudgetAiServiceTest {
         every { callResponseSpec.entity(BudgetAiService.AiMappingResponse::class.java) } returns expectedResponse
 
         // When
-        val result = service.suggestMapping(
-            bankPayeeName = "NETFLIX.COM",
-            bankDescription = "Monthly Subscription",
-            knownPayees = listOf(BudgetAiService.ActualPayee("payee-123", "Netflix")),
-            internalAccounts = listOf(BudgetAiService.InternalAccount("acc-1", "Main"))
-        )
+        val result =
+            service.suggestMapping(
+                bankPayeeName = "NETFLIX.COM",
+                bankDescription = "Monthly Subscription",
+                knownPayees = listOf(BudgetAiService.ActualPayee("payee-123", "Netflix")),
+                internalAccounts = listOf(BudgetAiService.InternalAccount("acc-1", "Main")),
+            )
 
         // Then
         assertNotNull(result)

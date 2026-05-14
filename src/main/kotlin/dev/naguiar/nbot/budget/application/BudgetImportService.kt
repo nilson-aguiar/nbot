@@ -1,12 +1,12 @@
 package dev.naguiar.nbot.budget.application
 
+import dev.naguiar.nbot.budget.domain.TransactionDraftRepository
 import dev.naguiar.nbot.budget.domain.TransactionStatus
-import dev.naguiar.nbot.budget.infrastructure.db.TransactionDraftRepository
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.io.InputStream
-import java.util.UUID
+import java.util.*
 import java.util.zip.ZipInputStream
 
 @Service
@@ -14,7 +14,7 @@ class BudgetImportService(
     private val camtParserService: CamtParserService,
     private val mappingEngineService: MappingEngineService,
     private val transactionDraftRepository: TransactionDraftRepository,
-    private val actualBudgetService: ActualBudgetService
+    private val actualBudgetService: ActualBudgetService,
 ) {
     private val logger = LoggerFactory.getLogger(BudgetImportService::class.java)
 
@@ -53,25 +53,32 @@ class BudgetImportService(
         val payees = actualBudgetService.getPayees()
         logger.info("Fetched {} payees for re-evaluation", payees.size)
 
-        pendingDrafts.forEach { draft ->
-            mappingEngineService.applyMappings(draft, payees)
-        }
+        val updatedDrafts =
+            pendingDrafts.map { draft ->
+                val updatedDraft = mappingEngineService.applyMappings(draft, payees)
+                transactionDraftRepository.save(updatedDraft)
+                updatedDraft
+            }
 
-        transactionDraftRepository.saveAll(pendingDrafts)
-        logger.info("Re-evaluation complete for {} drafts", pendingDrafts.size)
+        logger.info("Re-evaluation complete for {} drafts", updatedDrafts.size)
     }
 
-    private fun processCamtStream(inputStream: InputStream, exportFileId: String) {
+    private fun processCamtStream(
+        inputStream: InputStream,
+        exportFileId: String,
+    ) {
         logger.info("Processing CAMT stream with exportFileId: {}", exportFileId)
         val protectedStream = NonClosingInputStream(inputStream)
         val drafts = camtParserService.parse(protectedStream, exportFileId)
         logger.info("Parsed {} drafts from CAMT stream", drafts.size)
 
-        drafts.forEach { draft ->
-            mappingEngineService.applyMappings(draft)
-        }
-        transactionDraftRepository.saveAll(drafts)
-        logger.info("Saved {} drafts to repository", drafts.size)
+        val mappedDrafts =
+            drafts.map { draft ->
+                mappingEngineService.applyMappings(draft)
+            }
+
+        transactionDraftRepository.saveAll(mappedDrafts)
+        logger.info("Saved {} drafts to repository", mappedDrafts.size)
     }
 }
 
@@ -80,15 +87,29 @@ class BudgetImportService(
  * This is useful when passing a ZipInputStream to a consumer that might close it
  * (like an XML parser), which would prevent reading further entries from the ZIP.
  */
-private class NonClosingInputStream(private val delegate: InputStream) : InputStream() {
+private class NonClosingInputStream(
+    private val delegate: InputStream,
+) : InputStream() {
     override fun read(): Int = delegate.read()
+
     override fun read(b: ByteArray): Int = delegate.read(b)
-    override fun read(b: ByteArray, off: Int, len: Int): Int = delegate.read(b, off, len)
+
+    override fun read(
+        b: ByteArray,
+        off: Int,
+        len: Int,
+    ): Int = delegate.read(b, off, len)
+
     override fun skip(n: Long): Long = delegate.skip(n)
+
     override fun available(): Int = delegate.available()
+
     override fun mark(readlimit: Int) = delegate.mark(readlimit)
+
     override fun reset() = delegate.reset()
+
     override fun markSupported(): Boolean = delegate.markSupported()
+
     override fun close() {
         // Do nothing
     }

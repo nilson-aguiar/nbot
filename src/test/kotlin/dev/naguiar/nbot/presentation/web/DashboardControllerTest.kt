@@ -4,9 +4,9 @@ import dev.naguiar.nbot.application.web.DashboardDataService
 import dev.naguiar.nbot.application.web.MetricsInfo
 import dev.naguiar.nbot.budget.application.ActualBudgetService
 import dev.naguiar.nbot.budget.application.BudgetImportService
+import dev.naguiar.nbot.budget.domain.TransactionDraftRepository
 import dev.naguiar.nbot.budget.domain.TransactionStatus
 import dev.naguiar.nbot.budget.infrastructure.config.ActualBudgetProperties
-import dev.naguiar.nbot.budget.infrastructure.db.TransactionDraftRepository
 import dev.naguiar.nbot.infrastructure.logging.SseLogEmitterService
 import io.mockk.every
 import io.mockk.mockk

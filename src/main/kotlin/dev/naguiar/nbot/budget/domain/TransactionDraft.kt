@@ -1,24 +1,17 @@
 package dev.naguiar.nbot.budget.domain
 
-import jakarta.persistence.Entity
-import jakarta.persistence.EnumType
-import jakarta.persistence.Enumerated
-import jakarta.persistence.Id
 import java.time.LocalDate
-import java.util.UUID
+import java.util.*
 
-@Entity
-class TransactionDraft(
-    @Id
+data class TransactionDraft(
     val id: UUID = UUID.randomUUID(),
-    var bookingDate: LocalDate,
-    var amount: Long,
-    var currency: String,
-    var bankPayeeName: String,
-    var bankDescription: String,
-    var suggestedPayeeId: String? = null,
-    var suggestedPayeeName: String? = null,
-    @Enumerated(EnumType.STRING)
-    var status: TransactionStatus = TransactionStatus.PENDING,
-    var exportFileId: String
+    val bookingDate: LocalDate,
+    val amount: Long,
+    val currency: String,
+    val bankPayeeName: String,
+    val bankDescription: String,
+    val suggestedPayeeId: String? = null,
+    val suggestedPayeeName: String? = null,
+    val status: TransactionStatus = TransactionStatus.PENDING,
+    val exportFileId: String,
 )

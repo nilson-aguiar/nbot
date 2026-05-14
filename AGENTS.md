@@ -22,7 +22,7 @@ The application follows a Clean Code structure with feature-based packaging.
 - **`/budget`**: Module for financial integration.
     - `domain`: Entities (`PayeeMapping`, `TransactionDraft`) and Enums.
     - `application`: Core logic including `CamtParserService` (XML), `MappingEngineService` (Regex + AI), and `BudgetAiService`.
-    - `infrastructure`: `ActualBudgetApi` (Spring HTTP Interface) and JPA repositories.
+    - `infrastructure`: Generated Spring HTTP Interfaces (via OpenAPI Generator) and JPA repositories.
 - **`/presentation/telegram`**: Entry point for Telegram updates. Handles both torrent documents and CAMT.053 XML bank statements.
 - **`/presentation/web`**: Web controllers. The `DashboardController` includes a dedicated "Budget" view.
 - **`/infrastructure`**: Shared infrastructure like configuration, security, and the custom `SseLogbackAppender` for live dashboard logs.

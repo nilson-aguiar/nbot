@@ -6,7 +6,6 @@ import org.springframework.core.io.ClassPathResource
 import java.time.LocalDate
 
 class CamtParserServiceTest {
-
     private val camtParserService = CamtParserService()
 
     @Test

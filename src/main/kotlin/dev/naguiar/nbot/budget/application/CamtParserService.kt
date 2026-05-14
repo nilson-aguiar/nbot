@@ -13,8 +13,10 @@ import javax.xml.xpath.XPathFactory
 
 @Service
 class CamtParserService {
-
-    fun parse(inputStream: InputStream, exportFileId: String): List<TransactionDraft> {
+    fun parse(
+        inputStream: InputStream,
+        exportFileId: String,
+    ): List<TransactionDraft> {
         val factory = DocumentBuilderFactory.newInstance()
         factory.isNamespaceAware = false // Simplifies XPath if we don't care about namespaces
         val builder = factory.newDocumentBuilder()
@@ -31,7 +33,7 @@ class CamtParserService {
             val amountStr = xpath.evaluate("Amt", entryNode)
             val currency = xpath.evaluate("Amt/@Ccy", entryNode)
             val indicator = xpath.evaluate("CdtDbtInd", entryNode)
-            
+
             var bookingDateStr = xpath.evaluate("BookgDt/Dt", entryNode)
             if (bookingDateStr.isNullOrBlank()) {
                 bookingDateStr = xpath.evaluate("BookgDt/DtTm", entryNode)
@@ -63,15 +65,16 @@ class CamtParserService {
             val cents = amount.movePointRight(2).toLong()
             val finalAmount = if (indicator == "DBIT") -cents else cents
 
-            val date = try {
-                if (bookingDateStr.length >= 10) {
-                    LocalDate.parse(bookingDateStr.substring(0, 10))
-                } else {
+            val date =
+                try {
+                    if (bookingDateStr.length >= 10) {
+                        LocalDate.parse(bookingDateStr.substring(0, 10))
+                    } else {
+                        LocalDate.now()
+                    }
+                } catch (e: Exception) {
                     LocalDate.now()
                 }
-            } catch (e: Exception) {
-                LocalDate.now()
-            }
 
             transactions.add(
                 TransactionDraft(
@@ -80,8 +83,8 @@ class CamtParserService {
                     currency = currency,
                     bankPayeeName = payeeName ?: "",
                     bankDescription = description ?: "",
-                    exportFileId = exportFileId
-                )
+                    exportFileId = exportFileId,
+                ),
             )
         }
 

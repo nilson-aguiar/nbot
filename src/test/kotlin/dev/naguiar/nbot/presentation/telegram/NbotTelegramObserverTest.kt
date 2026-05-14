@@ -3,19 +3,24 @@ package dev.naguiar.nbot.presentation.telegram
 import dev.naguiar.nbot.budget.application.BudgetImportService
 import dev.naguiar.nbot.infrastructure.config.TelegramProperties
 import dev.naguiar.nbot.tools.torrent.TorrentTools
-import io.mockk.*
+import io.mockk.every
+import io.mockk.mockk
+import io.mockk.slot
+import io.mockk.spyk
+import io.mockk.verify
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.telegram.telegrambots.meta.api.methods.GetFile
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage
-import org.telegram.telegrambots.meta.api.objects.*
-import org.telegram.telegrambots.meta.exceptions.TelegramApiException
+import org.telegram.telegrambots.meta.api.objects.Document
+import org.telegram.telegrambots.meta.api.objects.Message
+import org.telegram.telegrambots.meta.api.objects.Update
+import org.telegram.telegrambots.meta.api.objects.User
 import java.io.File
 import java.io.InputStream
 import kotlin.test.assertEquals
 
 class NbotTelegramObserverTest {
-
     private val telegramProperties = mockk<TelegramProperties>()
     private val torrentTools = mockk<TorrentTools>()
     private val budgetImportService = mockk<BudgetImportService>()
@@ -118,14 +123,14 @@ class NbotTelegramObserverTest {
         every { observer.execute(any<GetFile>()) } returns telegramFile
         every { observer.downloadFile(telegramFile) } returns tempFile
         every { torrentTools.addTorrentFile(any()) } returns "Torrent added successfully"
-        
+
         val sendMessageSlot = slot<SendMessage>()
         every { observer.execute(capture(sendMessageSlot)) } returns mockk()
 
         observer.onUpdateReceived(update)
 
         assertEquals("Torrent added successfully", sendMessageSlot.captured.text)
-        
+
         tempFile.delete()
     }
 
@@ -160,7 +165,10 @@ class NbotTelegramObserverTest {
 
         observer.onUpdateReceived(update)
 
-        assertEquals("Successfully imported transactions. Review them on the dashboard: http://localhost:8080/dashboard", sendMessageSlot.captured.text)
+        assertEquals(
+            "Successfully imported transactions. Review them on the dashboard: http://localhost:8080/dashboard",
+            sendMessageSlot.captured.text,
+        )
 
         tempFile.delete()
     }
@@ -185,7 +193,7 @@ class NbotTelegramObserverTest {
         every { telegramProperties.allowedUsers } returns listOf(1L)
 
         every { observer.execute(any<GetFile>()) } throws RuntimeException("Download failed")
-        
+
         val sendMessageSlot = slot<SendMessage>()
         every { observer.execute(capture(sendMessageSlot)) } returns mockk()
 

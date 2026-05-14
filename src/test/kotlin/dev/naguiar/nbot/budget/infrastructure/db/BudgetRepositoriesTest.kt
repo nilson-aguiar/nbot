@@ -19,7 +19,6 @@ import java.time.LocalDate
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @Testcontainers
 class BudgetRepositoriesTest {
-
     companion object {
         @Container
         val postgres = PostgreSQLContainer("postgres:17-alpine")
@@ -37,34 +36,36 @@ class BudgetRepositoriesTest {
     lateinit var payeeMappingRepository: PayeeMappingRepository
 
     @Autowired
-    lateinit var transactionDraftRepository: TransactionDraftRepository
+    lateinit var transactionDraftRepository: JpaTransactionDraftRepository
 
     @Test
     fun `should save and retrieve PayeeMapping`() {
-        val mapping = PayeeMapping(
-            bankPattern = "AMZN",
-            actualPayeeName = "Amazon",
-            actualPayeeId = "uuid-123"
-        )
+        val mapping =
+            PayeeMapping(
+                bankPattern = "AMZN",
+                actualPayeeName = "Amazon",
+                actualPayeeId = "uuid-123",
+            )
         val saved = payeeMappingRepository.save(mapping)
-        
+
         val retrieved = payeeMappingRepository.findById(saved.id).orElseThrow()
         assertThat(retrieved.actualPayeeName).isEqualTo("Amazon")
     }
 
     @Test
     fun `should save and retrieve TransactionDraft`() {
-        val draft = TransactionDraft(
-            bookingDate = LocalDate.now(),
-            amount = 1250,
-            currency = "EUR",
-            bankPayeeName = "Netflix",
-            bankDescription = "Monthly sub",
-            exportFileId = "file-1"
-        )
-        val saved = transactionDraftRepository.save(draft)
-        
-        val retrieved = transactionDraftRepository.findById(saved.id).orElseThrow()
+        val draft =
+            TransactionDraft(
+                bookingDate = LocalDate.now(),
+                amount = 1250,
+                currency = "EUR",
+                bankPayeeName = "Netflix",
+                bankDescription = "Monthly sub",
+                exportFileId = "file-1",
+            )
+        val saved = transactionDraftRepository.save(TransactionDraftEntity.fromDomain(draft)).toDomain()
+
+        val retrieved = transactionDraftRepository.findById(saved.id).orElseThrow().toDomain()
         assertThat(retrieved.status).isEqualTo(TransactionStatus.PENDING)
     }
 }

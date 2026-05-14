@@ -2,7 +2,7 @@ package dev.naguiar.nbot.budget.domain
 
 import jakarta.persistence.Entity
 import jakarta.persistence.Id
-import java.util.UUID
+import java.util.*
 
 @Entity
 class PayeeMapping(
@@ -13,5 +13,5 @@ class PayeeMapping(
     var actualPayeeId: String,
     var isInternalTransfer: Boolean = false,
     var targetAccountId: String? = null,
-    var confidenceScore: Float = 1.0f
+    var confidenceScore: Float = 1.0f,
 )

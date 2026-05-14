@@ -1,7 +1,7 @@
 package dev.naguiar.nbot.budget.application
 
 import dev.naguiar.nbot.budget.domain.TransactionDraft
-import dev.naguiar.nbot.budget.infrastructure.db.TransactionDraftRepository
+import dev.naguiar.nbot.budget.domain.TransactionDraftRepository
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
@@ -11,17 +11,17 @@ import java.io.InputStream
 import java.time.LocalDate
 
 class BudgetImportServiceTest {
-
     private val camtParserService = mockk<CamtParserService>()
-    private val mappingEngineService = mockk<MappingEngineService>(relaxed = true)
+    private val mappingEngineService = mockk<MappingEngineService>()
     private val transactionDraftRepository = mockk<TransactionDraftRepository>(relaxed = true)
     private val actualBudgetService = mockk<ActualBudgetService>(relaxed = true)
-    private val budgetImportService = BudgetImportService(
-        camtParserService,
-        mappingEngineService,
-        transactionDraftRepository,
-        actualBudgetService
-    )
+    private val budgetImportService =
+        BudgetImportService(
+            camtParserService,
+            mappingEngineService,
+            transactionDraftRepository,
+            actualBudgetService,
+        )
 
     @Test
     fun `should orchestrate CAMT import successfully`() {
@@ -32,6 +32,8 @@ class BudgetImportServiceTest {
         val drafts = listOf(draft1, draft2)
 
         every { camtParserService.parse(any<InputStream>(), any()) } returns drafts
+        every { mappingEngineService.applyMappings(draft1) } returns draft1
+        every { mappingEngineService.applyMappings(draft2) } returns draft2
         every { transactionDraftRepository.saveAll(drafts) } returns drafts
 
         // When
@@ -45,12 +47,13 @@ class BudgetImportServiceTest {
         verify { transactionDraftRepository.saveAll(drafts) }
     }
 
-    private fun createDraft(bankPayeeName: String) = TransactionDraft(
-        bookingDate = LocalDate.now(),
-        amount = 1000,
-        currency = "EUR",
-        bankPayeeName = bankPayeeName,
-        bankDescription = "Description",
-        exportFileId = "temp-id"
-    )
+    private fun createDraft(bankPayeeName: String) =
+        TransactionDraft(
+            bookingDate = LocalDate.now(),
+            amount = 1000,
+            currency = "EUR",
+            bankPayeeName = bankPayeeName,
+            bankDescription = "Description",
+            exportFileId = "temp-id",
+        )
 }
