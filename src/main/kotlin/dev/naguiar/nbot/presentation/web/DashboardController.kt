@@ -1,17 +1,36 @@
 package dev.naguiar.nbot.presentation.web
 
 import dev.naguiar.nbot.application.web.DashboardDataService
+import dev.naguiar.nbot.budget.application.ActualBudgetService
+import dev.naguiar.nbot.budget.application.BudgetImportService
+import dev.naguiar.nbot.budget.domain.TransactionDraftRepository
+import dev.naguiar.nbot.budget.domain.TransactionStatus
+import dev.naguiar.nbot.budget.infrastructure.config.ActualBudgetProperties
 import dev.naguiar.nbot.infrastructure.logging.SseLogEmitterService
 import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestParam
+import org.springframework.web.multipart.MultipartFile
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter
+import java.util.UUID
 
 @Controller
 class DashboardController(
     private val dataService: DashboardDataService,
     private val logEmitterService: SseLogEmitterService,
+    private val budgetImportService: BudgetImportService,
+    private val transactionDraftRepository: TransactionDraftRepository,
+    private val actualBudgetService: ActualBudgetService,
+    private val properties: ActualBudgetProperties,
+    private val templateEngine: org.thymeleaf.TemplateEngine,
+    private val sseBudgetEmitterService: SseBudgetEmitterService,
 ) {
+    @GetMapping("/")
+    fun index(): String = "redirect:/dashboard"
+
     @GetMapping("/dashboard")
     fun dashboard(model: Model): String {
         model.addAttribute("tools", dataService.getRegisteredTools())
@@ -25,10 +44,98 @@ class DashboardController(
         return "fragments/metrics :: metrics"
     }
 
+    @GetMapping("/dashboard/torrents")
+    fun torrentsFragment(): String = "fragments/logs :: logs"
+
+    @GetMapping("/dashboard/budget")
+    fun budgetFragment(model: Model): String {
+        model.addAttribute("drafts", transactionDraftRepository.findByStatus(TransactionStatus.PENDING))
+        return "fragments/budget :: budget"
+    }
+
+    @PostMapping("/dashboard/budget/upload")
+    fun uploadCamt(
+        @RequestParam("file") file: MultipartFile,
+        model: Model,
+    ): String {
+        if (!file.isEmpty) {
+            val filename = file.originalFilename?.lowercase() ?: ""
+            if (filename.endsWith(".zip")) {
+                budgetImportService.importZip(file.inputStream)
+            } else {
+                budgetImportService.importCamt(file.inputStream)
+            }
+        }
+        return budgetFragment(model)
+    }
+
+    @PostMapping("/dashboard/budget/approve/{id}")
+    fun approveDraft(
+        @PathVariable("id") id: UUID,
+        model: Model,
+    ): String {
+        transactionDraftRepository.findById(id)?.let { draft ->
+            val approvedDraft = draft.copy(status = TransactionStatus.APPROVED)
+            transactionDraftRepository.save(approvedDraft)
+        }
+        return budgetFragment(model)
+    }
+
+    @PostMapping("/dashboard/budget/sync")
+    fun syncBudget(model: Model): String {
+        actualBudgetService.syncApprovedDrafts(properties.defaultAccountId)
+        return budgetFragment(model)
+    }
+
+    @PostMapping("/dashboard/budget/re-evaluate")
+    fun reEvaluateBudget(
+        @RequestParam(required = false) draftIds: List<UUID>?,
+        model: Model,
+    ): String {
+        if (draftIds.isNullOrEmpty()) {
+            return "fragments/budget :: reEvaluateButton"
+        }
+
+        budgetImportService.reEvaluateAsync(
+            draftIds = draftIds,
+            onProgress = { draft ->
+                val context =
+                    org.thymeleaf.context.Context().apply {
+                        setVariable("draft", draft)
+                        setVariable("oob", true)
+                    }
+                val html = templateEngine.process("fragments/draft-row :: draftRow", context)
+                sseBudgetEmitterService.broadcast(html)
+            },
+            onComplete = {
+                val context =
+                    org.thymeleaf.context
+                        .Context()
+                        .apply { setVariable("oob", true) }
+                val buttonHtml = templateEngine.process("fragments/budget :: reEvaluateButton", context)
+
+                val pendingDrafts = transactionDraftRepository.findByStatus(TransactionStatus.PENDING)
+                context.setVariable("drafts", pendingDrafts)
+                val badgeHtml = templateEngine.process("fragments/budget :: pendingBadge", context)
+
+                sseBudgetEmitterService.broadcast(buttonHtml + badgeHtml)
+            },
+        )
+
+        return "fragments/budget :: reEvaluateButton"
+    }
+
     @GetMapping("/dashboard/logs/stream")
     fun logStream(): SseEmitter {
         val emitter = SseEmitter(-1L)
         logEmitterService.addEmitter(emitter)
+        return emitter
+    }
+
+    @GetMapping("/dashboard/budget/stream")
+    fun budgetStream(): SseEmitter {
+        val emitter = SseEmitter(-1L)
+        sseBudgetEmitterService.addEmitter(emitter)
         return emitter
     }
 }

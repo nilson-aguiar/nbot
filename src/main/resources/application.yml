@@ -29,10 +29,18 @@ nbot:
     enabled: true
     allowed-users: ${ALLOWED_USERS:}
     telegram-bot-token: ${TELEGRAM_BOT_TOKEN:}
+    dashboard-url: ${DASHBOARD_URL:http://localhost:8080}
   qbittorrent:
     url: ${QBITTORRENT_URL:http://localhost:8090}
     username: ${QBITTORRENT_USERNAME:admin}
     password: ${QBITTORRENT_PASSWORD:adminadmin}
+  actual-budget:
+    url: ${ACTUAL_BUDGET_URL:http://localhost:5007/v1}
+    api-key: ${ACTUAL_BUDGET_API_KEY:}
+    sync-id: ${ACTUAL_BUDGET_SYNC_ID:}
+    encryption-password: ${ACTUAL_BUDGET_ENCRYPTION_PASSWORD:}
+    default-account-id: ${ACTUAL_BUDGET_DEFAULT_ACCOUNT_ID:}
+    internal-accounts: ${ACTUAL_BUDGET_INTERNAL_ACCOUNTS:}
 
 management:
   endpoints:
@@ -77,5 +85,5 @@ spring:
       chat:
         enabled: true
         options:
-          model: gpt-oss:20b
+          model: llama3.1:latest
       base-url: ${OLLAMA_BASE_URL:http://localhost:11434}

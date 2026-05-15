@@ -1,0 +1,36 @@
+# http://editorconfig.org
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+indent_size = 4
+indent_style = space
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+[**/generated/**]
+ij_formatter_enabled = false
+ktlint = disabled
+
+[*.{kt,kts}]
+# Official Kotlin Style: https://kotlinlang.org/docs/coding-conventions.html
+indent_size = 4
+continuation_indent_size = 8
+max_line_length = 120
+
+[*.{java,xml}]
+indent_size = 4
+
+[*.{yml,yaml,json}]
+indent_size = 2
+
+[*.md]
+trim_trailing_whitespace = false
+
+[*.sh]
+end_of_line = lf
+
+[*.bat]
+end_of_line = crlf
+

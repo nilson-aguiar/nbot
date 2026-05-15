@@ -1,27 +1,35 @@
 package dev.naguiar.nbot.presentation.telegram
 
+import dev.naguiar.nbot.budget.application.BudgetImportService
 import dev.naguiar.nbot.infrastructure.config.TelegramProperties
 import dev.naguiar.nbot.tools.torrent.TorrentTools
-import io.mockk.*
+import io.mockk.every
+import io.mockk.mockk
+import io.mockk.slot
+import io.mockk.spyk
+import io.mockk.verify
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.telegram.telegrambots.meta.api.methods.GetFile
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage
-import org.telegram.telegrambots.meta.api.objects.*
-import org.telegram.telegrambots.meta.exceptions.TelegramApiException
+import org.telegram.telegrambots.meta.api.objects.Document
+import org.telegram.telegrambots.meta.api.objects.Message
+import org.telegram.telegrambots.meta.api.objects.Update
+import org.telegram.telegrambots.meta.api.objects.User
 import java.io.File
+import java.io.InputStream
 import kotlin.test.assertEquals
 
 class NbotTelegramObserverTest {
-
     private val telegramProperties = mockk<TelegramProperties>()
     private val torrentTools = mockk<TorrentTools>()
+    private val budgetImportService = mockk<BudgetImportService>()
     private lateinit var observer: NbotTelegramObserver
 
     @BeforeEach
     fun setUp() {
         every { telegramProperties.telegramBotToken } returns "fake-token"
-        observer = spyk(NbotTelegramObserver(telegramProperties, torrentTools))
+        observer = spyk(NbotTelegramObserver(telegramProperties, torrentTools, budgetImportService))
     }
 
     @Test
@@ -115,14 +123,53 @@ class NbotTelegramObserverTest {
         every { observer.execute(any<GetFile>()) } returns telegramFile
         every { observer.downloadFile(telegramFile) } returns tempFile
         every { torrentTools.addTorrentFile(any()) } returns "Torrent added successfully"
-        
+
         val sendMessageSlot = slot<SendMessage>()
         every { observer.execute(capture(sendMessageSlot)) } returns mockk()
 
         observer.onUpdateReceived(update)
 
         assertEquals("Torrent added successfully", sendMessageSlot.captured.text)
-        
+
+        tempFile.delete()
+    }
+
+    @Test
+    fun `should process CAMT XML document from authorized user`() {
+        val update = mockk<Update>()
+        val message = mockk<Message>()
+        val user = mockk<User>()
+        val document = mockk<Document>()
+        val telegramFile = mockk<org.telegram.telegrambots.meta.api.objects.File>()
+        val tempFile = File.createTempFile("test", ".xml")
+
+        every { update.hasMessage() } returns true
+        every { update.message } returns message
+        every { message.from } returns user
+        every { user.id } returns 1L
+        every { message.chatId } returns 67890L
+        every { message.hasText() } returns false
+        every { message.hasDocument() } returns true
+        every { message.document } returns document
+        every { document.fileName } returns "test.xml"
+        every { document.fileId } returns "file123"
+        every { telegramProperties.allowedUsers } returns listOf(1L)
+        every { telegramProperties.dashboardUrl } returns "http://localhost:8080"
+
+        every { observer.execute(any<GetFile>()) } returns telegramFile
+        every { observer.downloadFile(telegramFile) } returns tempFile
+        every { budgetImportService.importCamt(any<InputStream>()) } returns "export-123"
+
+        val sendMessageSlot = slot<SendMessage>()
+        every { observer.execute(capture(sendMessageSlot)) } returns mockk()
+
+        observer.onUpdateReceived(update)
+
+        assertEquals(
+            "Successfully imported transactions. Review them on the dashboard: http://localhost:8080/dashboard",
+            sendMessageSlot.captured.text,
+        )
+
         tempFile.delete()
     }
 
@@ -146,7 +193,7 @@ class NbotTelegramObserverTest {
         every { telegramProperties.allowedUsers } returns listOf(1L)
 
         every { observer.execute(any<GetFile>()) } throws RuntimeException("Download failed")
-        
+
         val sendMessageSlot = slot<SendMessage>()
         every { observer.execute(capture(sendMessageSlot)) } returns mockk()
 

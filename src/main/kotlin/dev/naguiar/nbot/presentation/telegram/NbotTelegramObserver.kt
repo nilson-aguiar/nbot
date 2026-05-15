@@ -1,5 +1,6 @@
 package dev.naguiar.nbot.presentation.telegram
 
+import dev.naguiar.nbot.budget.application.BudgetImportService
 import dev.naguiar.nbot.infrastructure.config.TelegramProperties
 import dev.naguiar.nbot.tools.torrent.TorrentTools
 import org.slf4j.LoggerFactory
@@ -12,11 +13,13 @@ import org.telegram.telegrambots.meta.api.objects.Message
 import org.telegram.telegrambots.meta.api.objects.Update
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException
 import java.io.File
+import java.io.FileInputStream
 
 @Component
 class NbotTelegramObserver(
     private val telegramProperties: TelegramProperties,
     private val torrentTools: TorrentTools,
+    private val budgetImportService: BudgetImportService,
 ) : TelegramLongPollingBot(telegramProperties.telegramBotToken) {
     private val log = LoggerFactory.getLogger(NbotTelegramObserver::class.java)
 
@@ -39,10 +42,13 @@ class NbotTelegramObserver(
 
         if (message.hasDocument()) {
             val document = message.document
-            if (document.fileName?.endsWith(".torrent", ignoreCase = true) == true) {
+            val fileName = document.fileName ?: ""
+            if (fileName.endsWith(".torrent", ignoreCase = true)) {
                 processTorrentDocument(document, message)
+            } else if (fileName.endsWith(".xml", ignoreCase = true)) {
+                processCamtDocument(document, message)
             } else {
-                sendReply(message.chatId, "I only understand .torrent files at the moment.")
+                sendReply(message.chatId, "I only understand .torrent and .xml files at the moment.")
             }
             return
         }
@@ -68,6 +74,30 @@ class NbotTelegramObserver(
         } catch (e: Exception) {
             log.error("Failed to process document", e)
             sendReply(message.chatId, "Failed to download and process the torrent file.")
+        }
+    }
+
+    private fun processCamtDocument(
+        document: Document,
+        message: Message,
+    ) {
+        try {
+            val getFile = GetFile()
+            getFile.fileId = document.fileId
+            val telegramFile = execute(getFile)
+            val downloadedFile = downloadFile(telegramFile)
+
+            FileInputStream(downloadedFile).use { inputStream ->
+                budgetImportService.importCamt(inputStream)
+            }
+
+            sendReply(
+                message.chatId,
+                "Successfully imported transactions. Review them on the dashboard: ${telegramProperties.dashboardUrl}/dashboard",
+            )
+        } catch (e: Exception) {
+            log.error("Failed to process CAMT document", e)
+            sendReply(message.chatId, "Failed to download and process the CAMT file.")
         }
     }
 

@@ -3,45 +3,45 @@
 Welcome! If you are an AI assistant helping with `<nbot>`, read these guidelines to stay aligned with the project's architecture, security constraints, and user preferences.
 
 ## 📌 Project Overview
-`nbot` is a Kotlin Spring Boot application that manages torrents via Telegram and provides a real-time web dashboard. While it is designed to use Google Gemini for proactive assistance, **AI features are currently disabled** in favor of direct, deterministic torrent forwarding.
+`nbot` is a Kotlin Spring Boot application that provides two core features:
+1. **Media Management**: Forwards torrents and magnet links to qBittorrent via Telegram.
+2. **Budget Management**: Integrates with Actual Budget to parse CAMT.053 bank exports, map payees using AI, and sync transactions.
 
 ## 🛠 Technology Stack
-- **Language**: Kotlin 1.9.25 (JDK 21)
+- **Language**: Kotlin 2.x (Java 25)
 - **Framework**: Spring Boot 3.5.x
-- **Web UI**: HTMX, Thymeleaf, Tailwind CSS. We prefer server-side rendering with HTMX for interactivity.
+- **Web UI**: HTMX, Thymeleaf, Tailwind CSS. We use server-side rendering with HTMX for high interactivity with minimal JS.
+- **AI**: Spring AI (Gemini) with structured JSON outputs.
 - **Telegram SDK**: `telegrambots-spring-boot-starter`
-- **Testing**: JUnit 5, AssertJ (`assertThat`), MockK. **Do not use standard Mockito.**
+- **Testing**: JUnit 5, AssertJ (`assertThat`), MockK, Testcontainers (PostgreSQL). **Do not use standard Mockito.**
 - **Infrastructure**: Docker, Helm, GitHub Actions.
 
 ## 📁 Architecture Pattern
 The application follows a Clean Code structure with feature-based packaging.
 
-- **`/presentation/telegram`**: Entry point for Telegram updates. Currently handles logic for magnet links and torrent files directly.
-- **`/presentation/web`**: Web controllers serving Thymeleaf templates and HTMX fragments.
-- **`/application`**: Core business logic.
-  - `/web`: Services for dashboard data and metrics.
-- **`/infrastructure`**: 
-  - `/config`: Configuration beans (Telegram, qBittorrent, etc.).
-  - `/logging`: Custom `SseLogbackAppender` and `SseLogEmitterService` for streaming logs to the web UI.
-- **`/tools`**: Planned location for AI-invokable tools (e.g., `/tools/torrent`). Methods use Spring AI's `@Tool` annotation.
+- **`/budget`**: Module for financial integration.
+    - `domain`: Immutable domain models (`TransactionDraft`, `PayeeMapping`), repository interfaces, and Enums.
+    - `application`: Core logic including `CamtParserService` (XML), `MappingEngineService` (Regex + AI), and `BudgetAiService`.
+    - `infrastructure`: Persistence entities (`TransactionDraftEntity`, `PayeeMappingEntity`), repository adapters, and generated Spring HTTP Interfaces.
+- **`/presentation/telegram`**: Entry point for Telegram updates. Handles both torrent documents and CAMT.053 XML bank statements.
+- **`/presentation/web`**: Web controllers. The `DashboardController` includes a dedicated "Budget" view.
+- **`/infrastructure`**: Shared infrastructure like configuration, security, and the custom `SseLogbackAppender` for live dashboard logs.
 
-## 📍 Current AI Status: DISABLED
-Spring AI (Gemini/Ollama) integration is currently **inactive**. 
-- The `ChatOrchestrator.kt` and tool-calling logic are present but bypassed.
-- The `NbotTelegramObserver` handles updates using standard Kotlin logic.
-- **Do not attempt to fix or re-enable AI features** unless explicitly directed by the user.
+## 📍 AI Status: HYBRID
+- **General Chat**: Still largely bypassed or disabled in `ChatOrchestrator.kt`.
+- **Feature AI**: **ACTIVE**. The Budget module uses `BudgetAiService` to intelligently map payees and detect internal transfers. It is designed to be resilient and will return `null` if the AI infrastructure is not configured.
+- **Structured Output**: We prefer using `.entity(Class)` in Spring AI to get deterministic JSON responses from the LLM.
 
 ## 🔐 Security & Guardrails
 - **Whitelist**: Only authorized Telegram User IDs (`nbot.security.allowed-users`) can interact with the bot.
-- **Secrets**: Credentials (Gemini, Telegram, qBittorrent) are injected via environment variables.
+- **Environment Secrets**: All credentials (Gemini, Telegram, Actual Budget) are injected via environment variables.
 
-## 🏗 Infrastructure & Deployment
-- **Docker**: `Dockerfile` and `docker-compose.yml` are configured for local development and containerization.
-- **Kubernetes**: A Helm chart is located in `charts/nbot/`.
-- **CI/CD**: `.github/workflows/build.yml` handles automated builds and tests.
-
-## 🧠 Future Development Rules
-1. **HTMX/Thymeleaf**: When adding dashboard features, prefer HTMX fragments over full page reloads. Keep JavaScript to a minimum.
-2. **Logging**: New features should log meaningful events; they will be automatically streamed to the dashboard if using the standard SLF4J logger.
-3. **Clean Boundaries**: Maintain the separation between Telegram presentation, Web presentation, and core Application logic.
-4. **Testing**: Always add unit or integration tests for new features using MockK and AssertJ.
+## 🧠 Development Rules
+1. **HTMX/Thymeleaf**: Prefer HTMX fragments for dashboard updates. Use the sidebar pattern for tab navigation.
+2. **Clean Boundaries**: All budget-related logic MUST stay inside the `dev.naguiar.nbot.budget` package.
+3. **Internal Transfers**: When updating mapping logic, respect the `internalAccounts` configuration to prevent transfers from being treated as expenses.
+4. **Resiliency**: Services depending on AI should use `ObjectProvider` or null-checks to ensure the application starts even if AI profiles are inactive.
+5. **Testing**: New features require unit tests (MockK) and, if they touch the database, integration tests (Testcontainers).
+6. **OpenAPI**: The Actual Budget API client is generated from `src/main/resources/api/actual-budget-swagger.json`. Do not edit files in `infrastructure/api/generated` manually. Run `./gradlew openApiGenerate` if the spec changes.
+7. **Domain-Persistence Separation**: For entities with complex logic or requiring immutability (like `TransactionDraft`), separate the pure domain model (`data class`) from the JPA entity (`class`). Use repository adapters to manage mapping between these layers.
+8. **Check `docs/learnings/`**: This directory accumulates non-obvious gotchas discovered while working on the code (e.g., framework quirks, parser surprises). Skim relevant files before debugging in unfamiliar areas.

@@ -4,7 +4,6 @@ import io.micrometer.core.instrument.MeterRegistry
 import org.springframework.ai.tool.annotation.Tool
 import org.springframework.context.ApplicationContext
 import org.springframework.stereotype.Service
-import java.lang.reflect.Method
 import kotlin.math.roundToInt
 
 data class ToolInfo(
