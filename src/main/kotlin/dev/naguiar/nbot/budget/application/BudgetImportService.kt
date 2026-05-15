@@ -1,5 +1,6 @@
 package dev.naguiar.nbot.budget.application
 
+import dev.naguiar.nbot.budget.domain.TransactionDraft
 import dev.naguiar.nbot.budget.domain.TransactionDraftRepository
 import dev.naguiar.nbot.budget.domain.TransactionStatus
 import org.slf4j.LoggerFactory
@@ -26,7 +27,7 @@ class BudgetImportService(
     @Async
     fun reEvaluateAsync(
         draftIds: List<UUID>,
-        onProgress: (dev.naguiar.nbot.budget.domain.TransactionDraft) -> Unit,
+        onProgress: (TransactionDraft) -> Unit,
         onComplete: () -> Unit,
     ) {
         if (draftIds.isEmpty() || !_isEvaluating.compareAndSet(false, true)) {

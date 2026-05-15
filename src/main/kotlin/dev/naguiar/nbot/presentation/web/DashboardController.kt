@@ -104,7 +104,7 @@ class DashboardController(
                         setVariable("draft", draft)
                         setVariable("oob", true)
                     }
-                val html = templateEngine.process("fragments/budget :: draftRow", context)
+                val html = templateEngine.process("fragments/draft-row :: draftRow", context)
                 sseBudgetEmitterService.broadcast(html)
             },
             onComplete = {
