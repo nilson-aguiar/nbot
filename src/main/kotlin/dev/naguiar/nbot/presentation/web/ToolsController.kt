@@ -34,7 +34,7 @@ class ToolsController(
             val xmlStrings = camtMergerService.parseZipToStrings(file.inputStream)
             session.setAttribute("mergePreviewXmls", xmlStrings)
 
-            val previews = camtMergerService.getPreviewsFromStrings(xmlStrings)
+            val previews = camtMergerService.getPreviewsFromXmlStrings(xmlStrings)
             model.addAttribute("previews", previews)
         }
         return "fragments/tools :: preview"
@@ -61,7 +61,7 @@ class ToolsController(
         @Suppress("UNCHECKED_CAST")
         val xmlStrings = session.getAttribute("mergePreviewXmls") as? List<String>
         if (xmlStrings != null) {
-            val previews = camtMergerService.getPreviewsFromStrings(xmlStrings)
+            val previews = camtMergerService.getPreviewsFromXmlStrings(xmlStrings)
             model.addAttribute("previews", previews)
             model.addAttribute("filterSuccess", "Filter added successfully!")
         }
@@ -80,7 +80,7 @@ class ToolsController(
         @Suppress("UNCHECKED_CAST")
         val xmlStrings = session.getAttribute("mergePreviewXmls") as? List<String>
         if (xmlStrings != null) {
-            val previews = camtMergerService.getPreviewsFromStrings(xmlStrings)
+            val previews = camtMergerService.getPreviewsFromXmlStrings(xmlStrings)
             model.addAttribute("previews", previews)
             model.addAttribute("filterDeleted", "Filter removed successfully!")
         }

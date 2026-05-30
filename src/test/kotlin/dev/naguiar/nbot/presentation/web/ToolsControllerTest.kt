@@ -44,7 +44,7 @@ class ToolsControllerTest {
         val file = MockMultipartFile("file", "test.zip", "application/zip", "dummy content".toByteArray())
         val xmlStrings = listOf("<xml1/>", "<xml2/>")
         every { camtMergerService.parseZipToStrings(any()) } returns xmlStrings
-        every { camtMergerService.getPreviewsFromStrings(xmlStrings) } returns emptyList()
+        every { camtMergerService.getPreviewsFromXmlStrings(xmlStrings) } returns emptyList()
 
         mockMvc
             .perform(
@@ -55,14 +55,14 @@ class ToolsControllerTest {
             .andExpect(model().attributeExists("previews"))
 
         verify { camtMergerService.parseZipToStrings(any()) }
-        verify { camtMergerService.getPreviewsFromStrings(xmlStrings) }
+        verify { camtMergerService.getPreviewsFromXmlStrings(xmlStrings) }
     }
 
     @Test
     fun `should save filter and return preview`() {
         val xmlStrings = listOf("<xml/>")
         every { camtMergerService.saveFilter(any()) } returns mockk()
-        every { camtMergerService.getPreviewsFromStrings(xmlStrings) } returns emptyList()
+        every { camtMergerService.getPreviewsFromXmlStrings(xmlStrings) } returns emptyList()
 
         mockMvc
             .perform(
@@ -83,7 +83,7 @@ class ToolsControllerTest {
         val id = UUID.randomUUID()
         val xmlStrings = listOf("<xml/>")
         every { camtMergerService.deleteFilter(id) } returns Unit
-        every { camtMergerService.getPreviewsFromStrings(xmlStrings) } returns emptyList()
+        every { camtMergerService.getPreviewsFromXmlStrings(xmlStrings) } returns emptyList()
 
         mockMvc
             .perform(

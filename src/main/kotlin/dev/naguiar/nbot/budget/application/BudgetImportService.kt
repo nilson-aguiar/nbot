@@ -1,5 +1,6 @@
 package dev.naguiar.nbot.budget.application
 
+import com.prowidesoftware.swift.model.mx.MxCamt05300102
 import dev.naguiar.nbot.budget.domain.TransactionDraft
 import dev.naguiar.nbot.budget.domain.TransactionDraftRepository
 import dev.naguiar.nbot.budget.domain.TransactionStatus
@@ -65,14 +66,26 @@ class BudgetImportService(
             var entry = zipStream.nextEntry
             while (entry != null) {
                 if (!entry.isDirectory && entry.name.endsWith(".xml", ignoreCase = true)) {
-                    logger.info("Found XML entry in ZIP: {}", entry.name)
-                    processCamtStream(zipStream, exportFileId)
+                    val xml = NonClosingInputStream(zipStream).bufferedReader().readText()
+                    if (parseCamt053(xml) != null) {
+                        logger.info("Found valid CAMT.053 entry in ZIP: {}", entry.name)
+                        processCamtStream(xml.byteInputStream(), exportFileId)
+                    } else {
+                        logger.warn("Skipping file in ZIP as it's not a valid CAMT.053 XML: {}", entry.name)
+                    }
                 }
                 entry = zipStream.nextEntry
             }
         }
         return exportFileId
     }
+
+    private fun parseCamt053(xml: String): MxCamt05300102? =
+        try {
+            MxCamt05300102.parse(xml)
+        } catch (e: Exception) {
+            null
+        }
 
     fun reEvaluatePending() {
         logger.info("Starting re-evaluation of pending transactions")

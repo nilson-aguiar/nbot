@@ -9,49 +9,10 @@ import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.springframework.core.io.ClassPathResource
-import java.io.ByteArrayOutputStream
-import java.util.zip.ZipEntry
-import java.util.zip.ZipOutputStream
 
 class CamtMergerServiceTest {
     private val camtFilterRepository = mockk<CamtFilterRepository>()
     private val camtMergerService = CamtMergerService(camtFilterRepository)
-
-    @Test
-    fun `previewZip should extract transactions and apply filters`() {
-        // Given
-        val xmlContent = ClassPathResource("samples/camt053_sample.xml").inputStream.readBytes()
-        val zipStream = ByteArrayOutputStream()
-        ZipOutputStream(zipStream).use { zos ->
-            zos.putNextEntry(ZipEntry("test.xml"))
-            zos.write(xmlContent)
-            zos.closeEntry()
-        }
-        val inputStream = zipStream.toByteArray().inputStream()
-
-        val filter =
-            CamtFilter(
-                namePattern = "Coffee Shop",
-                ibanPattern = null,
-                isStrict = false,
-            )
-        every { camtFilterRepository.findAll() } returns listOf(filter)
-
-        // When
-        val previews = camtMergerService.previewZip(inputStream)
-
-        // Then
-        assertEquals(3, previews.size)
-
-        // "Coffee Shop" should be filtered (from sample XML)
-        val coffeeShop = previews.find { it.name == "Coffee Shop" }
-        assertTrue(coffeeShop!!.isFiltered)
-        assertEquals("Matched filter: Coffee Shop", coffeeShop.filterReason)
-
-        // Others should not be filtered
-        val supermarket = previews.find { it.name == "Supermarket XYZ" }
-        assertFalse(supermarket!!.isFiltered)
-    }
 
     @Test
     fun `should match strictly when isStrict is true`() {
@@ -171,7 +132,7 @@ class CamtMergerServiceTest {
         every { camtFilterRepository.findAll() } returns emptyList()
 
         // Get IDs from preview first
-        val previews = camtMergerService.getPreviewsFromStrings(xmlStrings)
+        val previews = camtMergerService.getPreviewsFromXmlStrings(xmlStrings)
         val excludedId = previews.first().id
 
         // When

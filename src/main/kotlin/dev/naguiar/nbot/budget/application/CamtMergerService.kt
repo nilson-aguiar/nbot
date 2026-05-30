@@ -32,7 +32,11 @@ class CamtMergerService(
             while (entry != null) {
                 if (!entry.isDirectory && entry.name.endsWith(".xml", ignoreCase = true)) {
                     val xml = NonClosingInputStream(zipStream).bufferedReader().readText()
-                    xmlStrings.add(xml)
+                    if (parseCamt053(xml) != null) {
+                        xmlStrings.add(xml)
+                    } else {
+                        logger.warn("Skipping file as it's not a valid CAMT.053 XML: {}", entry.name)
+                    }
                 }
                 entry = zipStream.nextEntry
             }
@@ -40,7 +44,14 @@ class CamtMergerService(
         return xmlStrings
     }
 
-    fun getPreviewsFromStrings(xmlStrings: List<String>): List<TransactionPreview> {
+    private fun parseCamt053(xml: String): MxCamt05300102? =
+        try {
+            MxCamt05300102.parse(xml)
+        } catch (e: Exception) {
+            null
+        }
+
+    fun getPreviewsFromXmlStrings(xmlStrings: List<String>): List<TransactionPreview> {
         val documents = xmlStrings.map { MxCamt05300102.parse(it) }
         val filters = camtFilterRepository.findAll()
         return documents
@@ -70,40 +81,22 @@ class CamtMergerService(
         excludedIds: List<String> = emptyList(),
     ): ByteArray {
         val documents = xmlStrings.map { MxCamt05300102.parse(it) }
+
         require(documents.isNotEmpty()) { "No valid CAMT XML files provided" }
+
         val merged = merge(documents, excludedIds)
+
+        // The Prowide library generates XML with a 'camt:' prefix (e.g., <camt:Document>).
+        // Many external tools and parsers expect the default namespace instead.
+        // We replace the prefixes to ensure maximum compatibility.
         val xmlString =
             merged
                 .message()
-                .replace("<camt:", "<")
-                .replace("</camt:", "</")
-                .replace("xmlns:camt=", "xmlns=")
-        return xmlString.toByteArray(Charsets.UTF_8)
-    }
+                .replace("<camt:", "<") // Remove prefix from opening tags
+                .replace("</camt:", "</") // Remove prefix from closing tags
+                .replace("xmlns:camt=", "xmlns=") // Convert prefixed namespace to default
 
-    fun previewZip(inputStream: InputStream): List<TransactionPreview> {
-        val documents = parseAllFromZip(inputStream)
-        val filters = camtFilterRepository.findAll()
-        return documents
-            .flatMap { doc -> doc.bkToCstmrStmt.stmt }
-            .flatMap { stmt ->
-                stmt.ntry.map { entry ->
-                    val (name, notes) = extractNameAndNotes(entry)
-                    val preview =
-                        TransactionPreview(
-                            id = generateId(entry, stmt),
-                            date = entryDateTime(entry, stmt),
-                            amount = entry.amt.value,
-                            currency = entry.amt.ccy,
-                            name = name,
-                            iban = extractIban(entry) ?: "",
-                            notes = notes,
-                            isDebit = entry.cdtDbtInd == com.prowidesoftware.swift.model.mx.dic.CreditDebitCode.DBIT,
-                        )
-                    applyFilters(preview, filters)
-                    preview
-                }
-            }.sortedByDescending { it.date }
+        return xmlString.toByteArray(Charsets.UTF_8)
     }
 
     private fun generateId(
@@ -117,7 +110,7 @@ class CamtMergerService(
             val iban = extractIban(entry) ?: ""
             // Simple stable ID based on key fields
             val raw = "$date|$amount|$name|$iban"
-            java.util.Base64
+            Base64
                 .getEncoder()
                 .encodeToString(raw.toByteArray())
         }
