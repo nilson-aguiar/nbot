@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.multipart.MultipartFile
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter
-import java.util.UUID
+import java.util.*
 
 @Controller
 class DashboardController(
@@ -133,11 +133,87 @@ class DashboardController(
     @GetMapping("/dashboard/tools")
     fun toolsFragment(): String = "fragments/tools :: tools"
 
+    @PostMapping("/dashboard/tools/merge-preview")
+    fun mergePreview(
+        @RequestParam("file") file: MultipartFile,
+        session: jakarta.servlet.http.HttpSession,
+        model: Model,
+    ): String {
+        if (!file.isEmpty) {
+            val xmlStrings = camtMergerService.parseZipToStrings(file.inputStream)
+            session.setAttribute("mergePreviewXmls", xmlStrings)
+
+            val previews = camtMergerService.getPreviewsFromStrings(xmlStrings)
+            model.addAttribute("previews", previews)
+        }
+        return "fragments/tools :: preview"
+    }
+
+    @PostMapping("/dashboard/tools/filters")
+    fun saveFilter(
+        @RequestParam(required = false) namePattern: String?,
+        @RequestParam(required = false) ibanPattern: String?,
+        @RequestParam(defaultValue = "false") isStrict: Boolean,
+        session: jakarta.servlet.http.HttpSession,
+        model: Model,
+    ): String {
+        if (!namePattern.isNullOrBlank() || !ibanPattern.isNullOrBlank()) {
+            camtMergerService.saveFilter(
+                dev.naguiar.nbot.budget.domain.CamtFilter(
+                    namePattern = namePattern?.takeIf { it.isNotBlank() },
+                    ibanPattern = ibanPattern?.takeIf { it.isNotBlank() },
+                    isStrict = isStrict,
+                ),
+            )
+        }
+
+        @Suppress("UNCHECKED_CAST")
+        val xmlStrings = session.getAttribute("mergePreviewXmls") as? List<String>
+        if (xmlStrings != null) {
+            val previews = camtMergerService.getPreviewsFromStrings(xmlStrings)
+            model.addAttribute("previews", previews)
+            model.addAttribute("filterSuccess", "Filter added successfully!")
+        }
+
+        return "fragments/tools :: preview"
+    }
+
+    @PostMapping("/dashboard/tools/filters/delete/{id}")
+    fun deleteFilter(
+        @PathVariable("id") id: UUID,
+        session: jakarta.servlet.http.HttpSession,
+        model: Model,
+    ): String {
+        camtMergerService.deleteFilter(id)
+
+        @Suppress("UNCHECKED_CAST")
+        val xmlStrings = session.getAttribute("mergePreviewXmls") as? List<String>
+        if (xmlStrings != null) {
+            val previews = camtMergerService.getPreviewsFromStrings(xmlStrings)
+            model.addAttribute("previews", previews)
+            model.addAttribute("filterDeleted", "Filter removed successfully!")
+        }
+
+        return "fragments/tools :: preview"
+    }
+
     @PostMapping("/dashboard/tools/merge-xml")
     fun mergeXml(
-        @RequestParam("file") file: MultipartFile,
+        @RequestParam(value = "excludedIds", required = false) excludedIds: List<String>?,
+        session: jakarta.servlet.http.HttpSession,
     ): ResponseEntity<ByteArray> {
-        val merged = camtMergerService.mergeZip(file.inputStream)
+        @Suppress("UNCHECKED_CAST")
+        val xmlStrings = session.getAttribute("mergePreviewXmls") as? List<String>
+
+        if (xmlStrings.isNullOrEmpty()) {
+            return ResponseEntity.badRequest().build()
+        }
+
+        val merged = camtMergerService.mergeFromStrings(xmlStrings, excludedIds ?: emptyList())
+
+        // Clean up session
+        session.removeAttribute("mergePreviewXmls")
+
         return ResponseEntity
             .ok()
             .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"merged-camt.xml\"")
