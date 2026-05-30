@@ -4,6 +4,7 @@ import com.prowidesoftware.swift.model.mx.MxCamt05300102
 import com.prowidesoftware.swift.model.mx.dic.AccountStatement2
 import com.prowidesoftware.swift.model.mx.dic.BalanceType12Code
 import com.prowidesoftware.swift.model.mx.dic.BankToCustomerStatementV02
+import com.prowidesoftware.swift.model.mx.dic.CreditDebitCode
 import com.prowidesoftware.swift.model.mx.dic.EntryDetails1
 import com.prowidesoftware.swift.model.mx.dic.EntryTransaction2
 import com.prowidesoftware.swift.model.mx.dic.GroupHeader42
@@ -67,7 +68,7 @@ class CamtMergerService(
                             name = name,
                             iban = extractIban(entry) ?: "",
                             notes = notes,
-                            isDebit = entry.cdtDbtInd == com.prowidesoftware.swift.model.mx.dic.CreditDebitCode.DBIT,
+                            isDebit = entry.cdtDbtInd == CreditDebitCode.DBIT,
                         )
                     applyFilters(preview, filters)
                     preview
@@ -165,7 +166,26 @@ class CamtMergerService(
             return merchant to "$prefix, $method, $details"
         }
 
-        // 3. Fallback to /NAME/ tag
+        // 3. Try SEPA Transfer specific parsing (Name - IBAN)
+        if (info.contains("/TRTP/SEPA OVERBOEKING/")) {
+            val name =
+                Regex("/NAME/([^/]+)(?:/|$)")
+                    .find(info)
+                    ?.groupValues
+                    ?.get(1)
+                    ?.trim()
+            val iban =
+                Regex("/IBAN/([^/]+)(?:/|$)")
+                    .find(info)
+                    ?.groupValues
+                    ?.get(1)
+                    ?.trim()
+            if (name != null && iban != null) {
+                return "$name - $iban" to info
+            }
+        }
+
+        // 4. Fallback to /NAME/ tag
         val nameTag =
             Regex("/NAME/([^/]+)(?:/|$)")
                 .find(info)
@@ -176,7 +196,7 @@ class CamtMergerService(
             return nameTag to info
         }
 
-        // 4. Final fallback: full string
+        // 5. Final fallback: full string
         return info to null
     }
 
@@ -244,12 +264,14 @@ class CamtMergerService(
                 .sortedBy { stmt -> stmtDate(stmt) }
 
         val allEntries =
-            allStatements.flatMap { stmt ->
-                stmt.ntry.filter { entry ->
-                    val id = generateId(entry, stmt)
-                    !excludedIds.contains(id)
-                }
-            }
+            allStatements
+                .flatMap { stmt ->
+                    stmt.ntry
+                        .filter { entry -> !excludedIds.contains(generateId(entry, stmt)) }
+                        .map { entry -> entry to stmt }
+                }.sortedBy { (entry, stmt) -> entryDateTime(entry, stmt) }
+                .map { it.first }
+
         logger.info(
             "Merging {} entries ({} excluded) from {} statements across {} files",
             allEntries.size,

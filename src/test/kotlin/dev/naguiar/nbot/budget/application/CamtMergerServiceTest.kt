@@ -1,5 +1,16 @@
 package dev.naguiar.nbot.budget.application
 
+import com.prowidesoftware.swift.model.mx.MxCamt05300102
+import com.prowidesoftware.swift.model.mx.dic.AccountStatement2
+import com.prowidesoftware.swift.model.mx.dic.ActiveOrHistoricCurrencyAndAmount
+import com.prowidesoftware.swift.model.mx.dic.BalanceType12
+import com.prowidesoftware.swift.model.mx.dic.BalanceType12Code
+import com.prowidesoftware.swift.model.mx.dic.BalanceType5Choice
+import com.prowidesoftware.swift.model.mx.dic.BankToCustomerStatementV02
+import com.prowidesoftware.swift.model.mx.dic.CashBalance3
+import com.prowidesoftware.swift.model.mx.dic.CreditDebitCode
+import com.prowidesoftware.swift.model.mx.dic.DateAndDateTimeChoice
+import com.prowidesoftware.swift.model.mx.dic.ReportEntry2
 import dev.naguiar.nbot.budget.domain.CamtFilter
 import dev.naguiar.nbot.budget.domain.CamtFilterRepository
 import io.mockk.every
@@ -9,6 +20,8 @@ import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.springframework.core.io.ClassPathResource
+import java.math.BigDecimal
+import java.time.LocalDate
 
 class CamtMergerServiceTest {
     private val camtFilterRepository = mockk<CamtFilterRepository>()
@@ -20,11 +33,8 @@ class CamtMergerServiceTest {
         val preview =
             TransactionPreview(
                 id = "1",
-                date =
-                    java.time.LocalDate
-                        .now()
-                        .atStartOfDay(),
-                amount = java.math.BigDecimal.TEN,
+                date = LocalDate.now().atStartOfDay(),
+                amount = BigDecimal.TEN,
                 currency = "EUR",
                 name = "John Doe",
                 iban = "NL1234",
@@ -61,7 +71,7 @@ class CamtMergerServiceTest {
     fun `should extract name and IBAN from addtlNtryInf using regex with various formats`() {
         // Case 1: Standard tags with trailing slash
         val entry1 =
-            com.prowidesoftware.swift.model.mx.dic.ReportEntry2().apply {
+            ReportEntry2().apply {
                 addtlNtryInf = "/NAME/Secret Agent/IBAN/DE8899/EXTRA/INFO"
             }
         assertEquals("Secret Agent", camtMergerService.extractNameAndNotes(entry1).first)
@@ -69,20 +79,20 @@ class CamtMergerServiceTest {
 
         // Case 2: Tags at the end of string (no trailing slash)
         val entry2 =
-            com.prowidesoftware.swift.model.mx.dic.ReportEntry2().apply {
+            ReportEntry2().apply {
                 addtlNtryInf = "/TRTP/INFO/NAME/End Name"
             }
         assertEquals("End Name", camtMergerService.extractNameAndNotes(entry2).first)
 
         val entry3 =
-            com.prowidesoftware.swift.model.mx.dic.ReportEntry2().apply {
+            ReportEntry2().apply {
                 addtlNtryInf = "/TRTP/INFO/IBAN/EndIBAN"
             }
         assertEquals("EndIBAN", camtMergerService.extractIban(entry3))
 
         // Case 3: Fallback to full string for Name
         val entry4 =
-            com.prowidesoftware.swift.model.mx.dic.ReportEntry2().apply {
+            ReportEntry2().apply {
                 addtlNtryInf = "BEA, Card Payment at Store"
             }
         assertEquals("BEA, Card Payment at Store", camtMergerService.extractNameAndNotes(entry4).first)
@@ -93,7 +103,7 @@ class CamtMergerServiceTest {
     fun `should extract merchant name from BEA transactions and put technical info in notes`() {
         // Given
         val entry =
-            com.prowidesoftware.swift.model.mx.dic.ReportEntry2().apply {
+            ReportEntry2().apply {
                 addtlNtryInf =
                     "BEA, Google Pay                 Parkeren ZGV                    NR:YY588R, 08.04.26/09:25       EDE GLD                         KAARTNUMMER: **0516"
             }
@@ -107,7 +117,7 @@ class CamtMergerServiceTest {
 
         // Test with double spaces in merchant name (SumUp case)
         val entry2 =
-            com.prowidesoftware.swift.model.mx.dic.ReportEntry2().apply {
+            ReportEntry2().apply {
                 addtlNtryInf =
                     "BEA, Betaalpas                  SumUp  *Hope Givers Fo          NR:MTXCYKQQ, 04.04.26/21:45     Amersfoort                      KAARTNUMMER: **0516"
             }
@@ -120,7 +130,7 @@ class CamtMergerServiceTest {
     fun `should extract merchant name from GEA transactions and put technical info in notes`() {
         // Given
         val entry =
-            com.prowidesoftware.swift.model.mx.dic.ReportEntry2().apply {
+            ReportEntry2().apply {
                 addtlNtryInf =
                     "GEA, Betaalpas                  Geldmaat Scheepjesh 96          NR:813063, 20.04.26/13:24       Veenendaal                      KAARTNUMMER: **0516"
             }
@@ -137,9 +147,7 @@ class CamtMergerServiceTest {
     fun `mergeFromDocuments should merge multiple documents and apply exclusions`() {
         // Given
         val xmlContent = ClassPathResource("samples/camt053_sample.xml").inputStream.bufferedReader().readText()
-        val doc =
-            com.prowidesoftware.swift.model.mx.MxCamt05300102
-                .parse(xmlContent)
+        val doc = MxCamt05300102.parse(xmlContent)
         val documents = listOf(doc)
 
         every { camtFilterRepository.findAll() } returns emptyList()
@@ -162,43 +170,43 @@ class CamtMergerServiceTest {
     fun `should reflect cleanUpEntry changes in the merged XML`() {
         // Given
         val entry =
-            com.prowidesoftware.swift.model.mx.dic.ReportEntry2().apply {
+            ReportEntry2().apply {
                 addtlNtryInf =
                     "BEA, Betaalpas                  SumUp  *Hope Givers Fo          NR:MTXCYKQQ, 04.04.26/21:45     Amersfoort                      KAARTNUMMER: **0516"
                 amt =
-                    com.prowidesoftware.swift.model.mx.dic.ActiveOrHistoricCurrencyAndAmount().apply {
-                        value = java.math.BigDecimal("10.00")
+                    ActiveOrHistoricCurrencyAndAmount().apply {
+                        value = BigDecimal("10.00")
                         ccy = "EUR"
                     }
-                cdtDbtInd = com.prowidesoftware.swift.model.mx.dic.CreditDebitCode.DBIT
+                cdtDbtInd = CreditDebitCode.DBIT
                 bookgDt =
-                    com.prowidesoftware.swift.model.mx.dic.DateAndDateTimeChoice().apply {
-                        dt = java.time.LocalDate.now()
+                    DateAndDateTimeChoice().apply {
+                        dt = LocalDate.now()
                     }
             }
         val stmt =
-            com.prowidesoftware.swift.model.mx.dic.AccountStatement2().apply {
+            AccountStatement2().apply {
                 ntry.add(entry)
                 bal.add(
-                    com.prowidesoftware.swift.model.mx.dic.CashBalance3().apply {
+                    CashBalance3().apply {
                         tp =
-                            com.prowidesoftware.swift.model.mx.dic.BalanceType12().apply {
+                            BalanceType12().apply {
                                 cdOrPrtry =
-                                    com.prowidesoftware.swift.model.mx.dic.BalanceType5Choice().apply {
-                                        cd = com.prowidesoftware.swift.model.mx.dic.BalanceType12Code.PRCD
+                                    BalanceType5Choice().apply {
+                                        cd = BalanceType12Code.PRCD
                                     }
                             }
                         dt =
-                            com.prowidesoftware.swift.model.mx.dic.DateAndDateTimeChoice().apply {
-                                dt = java.time.LocalDate.now()
+                            DateAndDateTimeChoice().apply {
+                                dt = LocalDate.now()
                             }
                     },
                 )
             }
         val doc =
-            com.prowidesoftware.swift.model.mx.MxCamt05300102().apply {
+            MxCamt05300102().apply {
                 bkToCstmrStmt =
-                    com.prowidesoftware.swift.model.mx.dic.BankToCustomerStatementV02().apply {
+                    BankToCustomerStatementV02().apply {
                         this.stmt.add(stmt)
                     }
             }
@@ -219,4 +227,88 @@ class CamtMergerServiceTest {
         assertTrue(mergedString.contains("<AddtlNtryInf>SumUp  *Hope Givers Fo</AddtlNtryInf>"))
         assertTrue(mergedString.contains("BEA, Betaalpas, NR:MTXCYKQQ, 04.04.26/21:45 Amersfoort KAARTNUMMER: **0516"))
     }
+
+    @Test
+    fun `should sort entries by date in merged XML`() {
+        // Given
+        val entryLate = createEntry("2026-05-30", "Late Entry")
+        val entryEarly = createEntry("2026-05-01", "Early Entry")
+        val entryMid = createEntry("2026-05-15", "Mid Entry")
+
+        val statement =
+            AccountStatement2().apply {
+                ntry.addAll(listOf(entryLate, entryMid, entryEarly))
+                bal.add(createBalance(BalanceType12Code.PRCD, LocalDate.parse("2026-05-01")))
+                bal.add(createBalance(BalanceType12Code.CLBD, LocalDate.parse("2026-05-30")))
+            }
+        val doc =
+            MxCamt05300102().apply {
+                bkToCstmrStmt =
+                    BankToCustomerStatementV02().apply {
+                        stmt.add(statement)
+                    }
+            }
+
+        every { camtFilterRepository.findAll() } returns emptyList()
+
+        // When
+        val mergedXml = camtMergerService.mergeFromDocuments(listOf(doc))
+        val mergedString = String(mergedXml)
+
+        // Then - Check order in XML
+        val indices = listOf("Early Entry", "Mid Entry", "Late Entry").map { mergedString.indexOf(it) }
+        assertEquals(indices.sorted(), indices, "Entries should be in chronological order in the XML")
+    }
+
+    @Test
+    fun `should format SEPA transfer payee name as Name - IBAN`() {
+        // Given
+        val entry =
+            ReportEntry2().apply {
+                addtlNtryInf =
+                    "/TRTP/SEPA OVERBOEKING/IBAN/NL99SPAR0123456789/BIC/SPARNL2A/NAME/JANE DOE/EREF/NOTPROVIDED"
+            }
+
+        // When
+        val (name, _) = camtMergerService.extractNameAndNotes(entry)
+
+        // Then
+        assertEquals("JANE DOE - NL99SPAR0123456789", name)
+    }
+
+    private fun createEntry(
+        dateStr: String,
+        info: String,
+    ): ReportEntry2 =
+        ReportEntry2().apply {
+            addtlNtryInf = info
+            amt =
+                ActiveOrHistoricCurrencyAndAmount().apply {
+                    value = BigDecimal.TEN
+                    ccy = "EUR"
+                }
+            cdtDbtInd = CreditDebitCode.DBIT
+            bookgDt =
+                DateAndDateTimeChoice().apply {
+                    dt = LocalDate.parse(dateStr)
+                }
+        }
+
+    private fun createBalance(
+        typeCode: BalanceType12Code,
+        date: LocalDate,
+    ): CashBalance3 =
+        CashBalance3().apply {
+            tp =
+                BalanceType12().apply {
+                    cdOrPrtry =
+                        BalanceType5Choice().apply {
+                            cd = typeCode
+                        }
+                }
+            dt =
+                DateAndDateTimeChoice().apply {
+                    dt = date
+                }
+        }
 }
