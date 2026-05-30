@@ -105,25 +105,25 @@ class CamtMergerServiceTest {
         val entry =
             ReportEntry2().apply {
                 addtlNtryInf =
-                    "BEA, Google Pay                 Parkeren ZGV                    NR:YY588R, 08.04.26/09:25       EDE GLD                         KAARTNUMMER: **0516"
+                    "BEA, Google Pay                 Parking lot                     NR:YY588R, 08.04.26/09:25       CITY A                          KAARTNUMMER: **9999"
             }
 
         // When
         val (name, notes) = camtMergerService.extractNameAndNotes(entry)
 
         // Then
-        assertEquals("Parkeren ZGV", name)
-        assertEquals("BEA, Google Pay, NR:YY588R, 08.04.26/09:25 EDE GLD KAARTNUMMER: **0516", notes)
+        assertEquals("Parking lot", name)
+        assertEquals("BEA, Google Pay, NR:YY588R, 08.04.26/09:25 CITY A KAARTNUMMER: **9999", notes)
 
         // Test with double spaces in merchant name (SumUp case)
         val entry2 =
             ReportEntry2().apply {
                 addtlNtryInf =
-                    "BEA, Betaalpas                  SumUp  *Hope Givers Fo          NR:MTXCYKQQ, 04.04.26/21:45     Amersfoort                      KAARTNUMMER: **0516"
+                    "BEA, Betaalpas                  SumUp  *Coffee Shop             NR:MTXCYKQQ, 04.04.26/21:45     CITY B                          KAARTNUMMER: **9999"
             }
         val (name2, notes2) = camtMergerService.extractNameAndNotes(entry2)
-        assertEquals("SumUp  *Hope Givers Fo", name2)
-        assertEquals("BEA, Betaalpas, NR:MTXCYKQQ, 04.04.26/21:45 Amersfoort KAARTNUMMER: **0516", notes2)
+        assertEquals("SumUp  *Coffee Shop", name2)
+        assertEquals("BEA, Betaalpas, NR:MTXCYKQQ, 04.04.26/21:45 CITY B KAARTNUMMER: **9999", notes2)
     }
 
     @Test
@@ -132,15 +132,15 @@ class CamtMergerServiceTest {
         val entry =
             ReportEntry2().apply {
                 addtlNtryInf =
-                    "GEA, Betaalpas                  Geldmaat Scheepjesh 96          NR:813063, 20.04.26/13:24       Veenendaal                      KAARTNUMMER: **0516"
+                    "GEA, Betaalpas                  ATM Main Street                 NR:813063, 20.04.26/13:24       CITY C                          KAARTNUMMER: **9999"
             }
 
         // When
         val (name, notes) = camtMergerService.extractNameAndNotes(entry)
 
         // Then
-        assertEquals("Geldmaat Scheepjesh 96", name)
-        assertEquals("GEA, Betaalpas, NR:813063, 20.04.26/13:24 Veenendaal KAARTNUMMER: **0516", notes)
+        assertEquals("ATM Main Street", name)
+        assertEquals("GEA, Betaalpas, NR:813063, 20.04.26/13:24 CITY C KAARTNUMMER: **9999", notes)
     }
 
     @Test
@@ -172,7 +172,7 @@ class CamtMergerServiceTest {
         val entry =
             ReportEntry2().apply {
                 addtlNtryInf =
-                    "BEA, Betaalpas                  SumUp  *Hope Givers Fo          NR:MTXCYKQQ, 04.04.26/21:45     Amersfoort                      KAARTNUMMER: **0516"
+                    "BEA, Betaalpas                  SumUp  *Coffee Shop             NR:MTXCYKQQ, 04.04.26/21:45     CITY B                          KAARTNUMMER: **9999"
                 amt =
                     ActiveOrHistoricCurrencyAndAmount().apply {
                         value = BigDecimal("10.00")
@@ -217,15 +217,15 @@ class CamtMergerServiceTest {
         camtMergerService.getPreviewsFromDocuments(listOf(doc))
 
         // Then - Document should be mutated
-        assertEquals("SumUp  *Hope Givers Fo", entry.addtlNtryInf)
+        assertEquals("SumUp  *Coffee Shop", entry.addtlNtryInf)
 
         // When - Merging
         val mergedXml = camtMergerService.mergeFromDocuments(listOf(doc))
         val mergedString = String(mergedXml)
 
         // Then - Merged XML should have clean name and structured notes
-        assertTrue(mergedString.contains("<AddtlNtryInf>SumUp  *Hope Givers Fo</AddtlNtryInf>"))
-        assertTrue(mergedString.contains("BEA, Betaalpas, NR:MTXCYKQQ, 04.04.26/21:45 Amersfoort KAARTNUMMER: **0516"))
+        assertTrue(mergedString.contains("<AddtlNtryInf>SumUp  *Coffee Shop</AddtlNtryInf>"))
+        assertTrue(mergedString.contains("BEA, Betaalpas, NR:MTXCYKQQ, 04.04.26/21:45 CITY B KAARTNUMMER: **9999"))
     }
 
     @Test
