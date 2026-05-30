@@ -104,6 +104,16 @@ class CamtMergerServiceTest {
         // Then
         assertEquals("Parkeren ZGV", name)
         assertEquals("BEA, Google Pay, NR:YY588R, 08.04.26/09:25 EDE GLD KAARTNUMMER: **0516", notes)
+
+        // Test with double spaces in merchant name (SumUp case)
+        val entry2 =
+            com.prowidesoftware.swift.model.mx.dic.ReportEntry2().apply {
+                addtlNtryInf =
+                    "BEA, Betaalpas                  SumUp  *Hope Givers Fo          NR:MTXCYKQQ, 04.04.26/21:45     Amersfoort                      KAARTNUMMER: **0516"
+            }
+        val (name2, notes2) = camtMergerService.extractNameAndNotes(entry2)
+        assertEquals("SumUp  *Hope Givers Fo", name2)
+        assertEquals("BEA, Betaalpas, NR:MTXCYKQQ, 04.04.26/21:45 Amersfoort KAARTNUMMER: **0516", notes2)
     }
 
     @Test
@@ -124,24 +134,89 @@ class CamtMergerServiceTest {
     }
 
     @Test
-    fun `mergeFromStrings should merge multiple XML strings and apply exclusions`() {
+    fun `mergeFromDocuments should merge multiple documents and apply exclusions`() {
         // Given
         val xmlContent = ClassPathResource("samples/camt053_sample.xml").inputStream.bufferedReader().readText()
-        val xmlStrings = listOf(xmlContent)
+        val doc =
+            com.prowidesoftware.swift.model.mx.MxCamt05300102
+                .parse(xmlContent)
+        val documents = listOf(doc)
 
         every { camtFilterRepository.findAll() } returns emptyList()
 
         // Get IDs from preview first
-        val previews = camtMergerService.getPreviewsFromXmlStrings(xmlStrings)
+        val previews = camtMergerService.getPreviewsFromDocuments(documents)
         val excludedId = previews.first().id
 
         // When
-        val mergedXml = camtMergerService.mergeFromStrings(xmlStrings, listOf(excludedId))
+        val mergedXml = camtMergerService.mergeFromDocuments(documents, listOf(excludedId))
 
         // Then
         val mergedString = String(mergedXml)
         val ntryCount = "<Ntry>".toRegex().findAll(mergedString).count()
         assertEquals(2, ntryCount, "One entry should have been excluded")
         assertFalse(mergedString.contains(excludedId), "Excluded ID should not be in the XML")
+    }
+
+    @Test
+    fun `should reflect cleanUpEntry changes in the merged XML`() {
+        // Given
+        val entry =
+            com.prowidesoftware.swift.model.mx.dic.ReportEntry2().apply {
+                addtlNtryInf =
+                    "BEA, Betaalpas                  SumUp  *Hope Givers Fo          NR:MTXCYKQQ, 04.04.26/21:45     Amersfoort                      KAARTNUMMER: **0516"
+                amt =
+                    com.prowidesoftware.swift.model.mx.dic.ActiveOrHistoricCurrencyAndAmount().apply {
+                        value = java.math.BigDecimal("10.00")
+                        ccy = "EUR"
+                    }
+                cdtDbtInd = com.prowidesoftware.swift.model.mx.dic.CreditDebitCode.DBIT
+                bookgDt =
+                    com.prowidesoftware.swift.model.mx.dic.DateAndDateTimeChoice().apply {
+                        dt = java.time.LocalDate.now()
+                    }
+            }
+        val stmt =
+            com.prowidesoftware.swift.model.mx.dic.AccountStatement2().apply {
+                ntry.add(entry)
+                bal.add(
+                    com.prowidesoftware.swift.model.mx.dic.CashBalance3().apply {
+                        tp =
+                            com.prowidesoftware.swift.model.mx.dic.BalanceType12().apply {
+                                cdOrPrtry =
+                                    com.prowidesoftware.swift.model.mx.dic.BalanceType5Choice().apply {
+                                        cd = com.prowidesoftware.swift.model.mx.dic.BalanceType12Code.PRCD
+                                    }
+                            }
+                        dt =
+                            com.prowidesoftware.swift.model.mx.dic.DateAndDateTimeChoice().apply {
+                                dt = java.time.LocalDate.now()
+                            }
+                    },
+                )
+            }
+        val doc =
+            com.prowidesoftware.swift.model.mx.MxCamt05300102().apply {
+                bkToCstmrStmt =
+                    com.prowidesoftware.swift.model.mx.dic.BankToCustomerStatementV02().apply {
+                        this.stmt.add(stmt)
+                    }
+            }
+
+        every { camtFilterRepository.findAll() } returns emptyList()
+
+        // When - Preview performs cleanup
+        camtMergerService.getPreviewsFromDocuments(listOf(doc))
+
+        // Then - Document should be mutated
+        assertEquals("SumUp  *Hope Givers Fo", entry.addtlNtryInf)
+
+        // When - Merging
+        val mergedXml = camtMergerService.mergeFromDocuments(listOf(doc))
+        val mergedString = String(mergedXml)
+
+        // Then - Merged XML should have clean name and structured notes
+        assertTrue(mergedString.contains("<AddtlNtryInf>SumUp  *Hope Givers Fo</AddtlNtryInf>"))
+        assertTrue(mergedString.contains("BEA, Betaalpas, NR:MTXCYKQQ, 04.04.26/21:45 Amersfoort KAARTNUMMER: **0516"))
     }
 }

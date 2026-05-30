@@ -1,5 +1,6 @@
 package dev.naguiar.nbot.presentation.web
 
+import com.prowidesoftware.swift.model.mx.MxCamt05300102
 import dev.naguiar.nbot.budget.application.CamtMergerService
 import io.mockk.every
 import io.mockk.mockk
@@ -42,9 +43,9 @@ class ToolsControllerTest {
     @Test
     fun `should handle merge preview`() {
         val file = MockMultipartFile("file", "test.zip", "application/zip", "dummy content".toByteArray())
-        val xmlStrings = listOf("<xml1/>", "<xml2/>")
-        every { camtMergerService.parseZipToStrings(any()) } returns xmlStrings
-        every { camtMergerService.getPreviewsFromXmlStrings(xmlStrings) } returns emptyList()
+        val documents = listOf(mockk<MxCamt05300102>())
+        every { camtMergerService.parseZipToDocuments(any()) } returns documents
+        every { camtMergerService.getPreviewsFromDocuments(documents) } returns emptyList()
 
         mockMvc
             .perform(
@@ -54,15 +55,15 @@ class ToolsControllerTest {
             .andExpect(view().name("fragments/tools :: preview"))
             .andExpect(model().attributeExists("previews"))
 
-        verify { camtMergerService.parseZipToStrings(any()) }
-        verify { camtMergerService.getPreviewsFromXmlStrings(xmlStrings) }
+        verify { camtMergerService.parseZipToDocuments(any()) }
+        verify { camtMergerService.getPreviewsFromDocuments(documents) }
     }
 
     @Test
     fun `should save filter and return preview`() {
-        val xmlStrings = listOf("<xml/>")
+        val documents = listOf(mockk<MxCamt05300102>())
         every { camtMergerService.saveFilter(any()) } returns mockk()
-        every { camtMergerService.getPreviewsFromXmlStrings(xmlStrings) } returns emptyList()
+        every { camtMergerService.getPreviewsFromDocuments(documents) } returns emptyList()
 
         mockMvc
             .perform(
@@ -70,7 +71,7 @@ class ToolsControllerTest {
                     .param("namePattern", "test")
                     .param("ibanPattern", "DE123")
                     .param("isStrict", "true")
-                    .sessionAttr("mergePreviewXmls", xmlStrings),
+                    .sessionAttr("mergePreviewDocs", documents),
             ).andExpect(status().isOk)
             .andExpect(view().name("fragments/tools :: preview"))
             .andExpect(model().attributeExists("filterSuccess"))
@@ -81,14 +82,14 @@ class ToolsControllerTest {
     @Test
     fun `should delete filter and return preview`() {
         val id = UUID.randomUUID()
-        val xmlStrings = listOf("<xml/>")
+        val documents = listOf(mockk<MxCamt05300102>())
         every { camtMergerService.deleteFilter(id) } returns Unit
-        every { camtMergerService.getPreviewsFromXmlStrings(xmlStrings) } returns emptyList()
+        every { camtMergerService.getPreviewsFromDocuments(documents) } returns emptyList()
 
         mockMvc
             .perform(
                 post("/dashboard/tools/filters/delete/$id")
-                    .sessionAttr("mergePreviewXmls", xmlStrings),
+                    .sessionAttr("mergePreviewDocs", documents),
             ).andExpect(status().isOk)
             .andExpect(view().name("fragments/tools :: preview"))
             .andExpect(model().attributeExists("filterDeleted"))
@@ -98,19 +99,19 @@ class ToolsControllerTest {
 
     @Test
     fun `should merge xml and return byte array`() {
-        val xmlStrings = listOf("<xml/>")
-        every { camtMergerService.mergeFromStrings(xmlStrings, any()) } returns "merged".toByteArray()
+        val documents = listOf(mockk<MxCamt05300102>())
+        every { camtMergerService.mergeFromDocuments(documents, any()) } returns "merged".toByteArray()
 
         mockMvc
             .perform(
                 post("/dashboard/tools/merge-xml")
-                    .sessionAttr("mergePreviewXmls", xmlStrings)
+                    .sessionAttr("mergePreviewDocs", documents)
                     .param("excludedIds", "id1", "id2"),
             ).andExpect(status().isOk)
             .andExpect(header().string("Content-Disposition", "attachment; filename=\"merged-camt.xml\""))
             .andExpect(content().contentType("application/xml"))
             .andExpect(content().bytes("merged".toByteArray()))
 
-        verify { camtMergerService.mergeFromStrings(xmlStrings, listOf("id1", "id2")) }
+        verify { camtMergerService.mergeFromDocuments(documents, listOf("id1", "id2")) }
     }
 }

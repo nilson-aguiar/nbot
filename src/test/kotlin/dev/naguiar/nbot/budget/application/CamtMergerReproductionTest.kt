@@ -24,14 +24,14 @@ class CamtMergerReproductionTest {
             return
         }
 
-        val xmlStrings =
+        val documents =
             FileInputStream(zipFile).use { inputStream ->
-                camtMergerService.parseZipToStrings(inputStream)
+                camtMergerService.parseZipToDocuments(inputStream)
             }
 
-        println("Found ${xmlStrings.size} XML strings in ZIP")
+        println("Found ${documents.size} documents in ZIP")
 
-        val mergedXml = camtMergerService.mergeFromStrings(xmlStrings)
+        val mergedXml = camtMergerService.mergeFromDocuments(documents)
         assertNotNull(mergedXml)
         println("Merged XML size: ${mergedXml.size} bytes")
     }

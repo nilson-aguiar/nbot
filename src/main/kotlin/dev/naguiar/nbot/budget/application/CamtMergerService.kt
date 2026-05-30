@@ -4,8 +4,11 @@ import com.prowidesoftware.swift.model.mx.MxCamt05300102
 import com.prowidesoftware.swift.model.mx.dic.AccountStatement2
 import com.prowidesoftware.swift.model.mx.dic.BalanceType12Code
 import com.prowidesoftware.swift.model.mx.dic.BankToCustomerStatementV02
+import com.prowidesoftware.swift.model.mx.dic.EntryDetails1
+import com.prowidesoftware.swift.model.mx.dic.EntryTransaction2
 import com.prowidesoftware.swift.model.mx.dic.GroupHeader42
 import com.prowidesoftware.swift.model.mx.dic.Pagination
+import com.prowidesoftware.swift.model.mx.dic.RemittanceInformation5
 import com.prowidesoftware.swift.model.mx.dic.ReportEntry2
 import dev.naguiar.nbot.budget.domain.CamtFilter
 import dev.naguiar.nbot.budget.domain.CamtFilterRepository
@@ -24,23 +27,20 @@ class CamtMergerService(
 ) {
     private val logger = LoggerFactory.getLogger(CamtMergerService::class.java)
 
-    fun parseZipToStrings(inputStream: InputStream): List<String> {
-        val xmlStrings = mutableListOf<String>()
+    fun parseZipToDocuments(inputStream: InputStream): List<MxCamt05300102> {
+        val documents = mutableListOf<MxCamt05300102>()
         ZipInputStream(inputStream).use { zipStream ->
             var entry = zipStream.nextEntry
             while (entry != null) {
                 if (!entry.isDirectory && entry.name.endsWith(".xml", ignoreCase = true)) {
                     val xml = NonClosingInputStream(zipStream).bufferedReader().readText()
-                    if (parseCamt053(xml) != null) {
-                        xmlStrings.add(xml)
-                    } else {
-                        logger.warn("Skipping file as it's not a valid CAMT.053 XML: {}", entry.name)
-                    }
+                    parseCamt053(xml)?.let { documents.add(it) }
+                        ?: logger.warn("Skipping file as it's not a valid CAMT.053 XML: {}", entry.name)
                 }
                 entry = zipStream.nextEntry
             }
         }
-        return xmlStrings
+        return documents
     }
 
     private fun parseCamt053(xml: String): MxCamt05300102? =
@@ -50,13 +50,13 @@ class CamtMergerService(
             null
         }
 
-    fun getPreviewsFromXmlStrings(xmlStrings: List<String>): List<TransactionPreview> {
-        val documents = xmlStrings.map { MxCamt05300102.parse(it) }
+    fun getPreviewsFromDocuments(documents: List<MxCamt05300102>): List<TransactionPreview> {
         val filters = camtFilterRepository.findAll()
         return documents
             .flatMap { doc -> doc.bkToCstmrStmt.stmt }
             .flatMap { stmt ->
                 stmt.ntry.map { entry ->
+                    cleanUpEntry(entry)
                     val (name, notes) = extractNameAndNotes(entry)
                     val preview =
                         TransactionPreview(
@@ -75,13 +75,11 @@ class CamtMergerService(
             }.sortedByDescending { it.date }
     }
 
-    fun mergeFromStrings(
-        xmlStrings: List<String>,
+    fun mergeFromDocuments(
+        documents: List<MxCamt05300102>,
         excludedIds: List<String> = emptyList(),
     ): ByteArray {
-        val documents = xmlStrings.map { MxCamt05300102.parse(it) }
-
-        require(documents.isNotEmpty()) { "No valid CAMT XML files provided" }
+        require(documents.isNotEmpty()) { "No valid CAMT documents provided" }
 
         val merged = merge(documents, excludedIds)
 
@@ -155,7 +153,9 @@ class CamtMergerService(
 
         // 2. Try BEA/GEA specific parsing
         // [Prefix], [Method]                 [Name]                    [Details]
-        val cardRegex = Regex("""^(BEA|GEA),\s+(.*?)\s{2,}(.*?)\s\s+(.*)$""")
+        // We use a more specific regex that looks for the 'NR:' marker, a date pattern, or a large gap
+        // to avoid splitting merchant names that contain double spaces (like "SumUp  *Merchant").
+        val cardRegex = Regex("""^(BEA|GEA),\s+(.*?)\s{2,}(.*?)\s{2,}((?:NR:|\d{2}\.\d{2}\.\d{2}/|\s{5,}).*)$""")
         val cardMatch = cardRegex.find(info)
         if (cardMatch != null) {
             val prefix = cardMatch.groupValues[1]
@@ -288,6 +288,22 @@ class CamtMergerService(
                     this.grpHdr = grpHdr
                     stmt.add(mergedStmt)
                 }
+        }
+    }
+
+    private fun cleanUpEntry(entry: ReportEntry2) {
+        val (name, notes) = extractNameAndNotes(entry)
+        if (name.isNotEmpty() && name != entry.addtlNtryInf) {
+            entry.addtlNtryInf = name
+
+            if (notes != null) {
+                val details = entry.ntryDtls?.firstOrNull() ?: EntryDetails1().also { entry.addNtryDtls(it) }
+                val tx = details.txDtls?.firstOrNull() ?: EntryTransaction2().also { details.addTxDtls(it) }
+                val rmtInf = tx.rmtInf ?: RemittanceInformation5().also { tx.rmtInf = it }
+                if (rmtInf.ustrd.isEmpty()) {
+                    rmtInf.addUstrd(notes)
+                }
+            }
         }
     }
 

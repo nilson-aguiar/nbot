@@ -1,5 +1,6 @@
 package dev.naguiar.nbot.presentation.web
 
+import com.prowidesoftware.swift.model.mx.MxCamt05300102
 import dev.naguiar.nbot.budget.application.CamtMergerService
 import dev.naguiar.nbot.budget.domain.CamtFilter
 import jakarta.servlet.http.HttpSession
@@ -31,10 +32,10 @@ class ToolsController(
         model: Model,
     ): String {
         if (!file.isEmpty) {
-            val xmlStrings = camtMergerService.parseZipToStrings(file.inputStream)
-            session.setAttribute("mergePreviewXmls", xmlStrings)
+            val documents = camtMergerService.parseZipToDocuments(file.inputStream)
+            session.setAttribute("mergePreviewDocs", documents)
 
-            val previews = camtMergerService.getPreviewsFromXmlStrings(xmlStrings)
+            val previews = camtMergerService.getPreviewsFromDocuments(documents)
             model.addAttribute("previews", previews)
         }
         return "fragments/tools :: preview"
@@ -59,9 +60,9 @@ class ToolsController(
         }
 
         @Suppress("UNCHECKED_CAST")
-        val xmlStrings = session.getAttribute("mergePreviewXmls") as? List<String>
-        if (xmlStrings != null) {
-            val previews = camtMergerService.getPreviewsFromXmlStrings(xmlStrings)
+        val documents = session.getAttribute("mergePreviewDocs") as? List<MxCamt05300102>
+        if (documents != null) {
+            val previews = camtMergerService.getPreviewsFromDocuments(documents)
             model.addAttribute("previews", previews)
             model.addAttribute("filterSuccess", "Filter added successfully!")
         }
@@ -78,9 +79,9 @@ class ToolsController(
         camtMergerService.deleteFilter(id)
 
         @Suppress("UNCHECKED_CAST")
-        val xmlStrings = session.getAttribute("mergePreviewXmls") as? List<String>
-        if (xmlStrings != null) {
-            val previews = camtMergerService.getPreviewsFromXmlStrings(xmlStrings)
+        val documents = session.getAttribute("mergePreviewDocs") as? List<MxCamt05300102>
+        if (documents != null) {
+            val previews = camtMergerService.getPreviewsFromDocuments(documents)
             model.addAttribute("previews", previews)
             model.addAttribute("filterDeleted", "Filter removed successfully!")
         }
@@ -94,16 +95,16 @@ class ToolsController(
         session: HttpSession,
     ): ResponseEntity<ByteArray> {
         @Suppress("UNCHECKED_CAST")
-        val xmlStrings = session.getAttribute("mergePreviewXmls") as? List<String>
+        val documents = session.getAttribute("mergePreviewDocs") as? List<MxCamt05300102>
 
-        if (xmlStrings.isNullOrEmpty()) {
+        if (documents.isNullOrEmpty()) {
             return ResponseEntity.badRequest().build()
         }
 
-        val merged = camtMergerService.mergeFromStrings(xmlStrings, excludedIds ?: emptyList())
+        val merged = camtMergerService.mergeFromDocuments(documents, excludedIds ?: emptyList())
 
         // Clean up session
-        session.removeAttribute("mergePreviewXmls")
+        session.removeAttribute("mergePreviewDocs")
 
         return ResponseEntity
             .ok()
