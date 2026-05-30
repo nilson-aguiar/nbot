@@ -19,6 +19,7 @@ import org.telegram.telegrambots.meta.api.objects.User
 import java.io.File
 import java.io.InputStream
 import kotlin.test.assertEquals
+import org.telegram.telegrambots.meta.api.objects.File as TelegramFile
 
 class NbotTelegramObserverTest {
     private val telegramProperties = mockk<TelegramProperties>()
@@ -105,7 +106,7 @@ class NbotTelegramObserverTest {
         val message = mockk<Message>()
         val user = mockk<User>()
         val document = mockk<Document>()
-        val telegramFile = mockk<org.telegram.telegrambots.meta.api.objects.File>()
+        val telegramFile = mockk<TelegramFile>()
         val tempFile = File.createTempFile("test", ".torrent")
 
         every { update.hasMessage() } returns true
@@ -140,7 +141,7 @@ class NbotTelegramObserverTest {
         val message = mockk<Message>()
         val user = mockk<User>()
         val document = mockk<Document>()
-        val telegramFile = mockk<org.telegram.telegrambots.meta.api.objects.File>()
+        val telegramFile = mockk<TelegramFile>()
         val tempFile = File.createTempFile("test", ".xml")
 
         every { update.hasMessage() } returns true

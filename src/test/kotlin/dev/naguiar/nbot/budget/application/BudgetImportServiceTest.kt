@@ -2,6 +2,7 @@ package dev.naguiar.nbot.budget.application
 
 import dev.naguiar.nbot.budget.domain.TransactionDraft
 import dev.naguiar.nbot.budget.domain.TransactionDraftRepository
+import dev.naguiar.nbot.budget.domain.TransactionStatus
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
@@ -9,7 +10,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import java.io.InputStream
 import java.time.LocalDate
-import java.util.UUID
+import java.util.*
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 
@@ -67,7 +68,7 @@ class BudgetImportServiceTest {
         val pendingDraft =
             createDraft(
                 "Netflix",
-            ).copy(status = dev.naguiar.nbot.budget.domain.TransactionStatus.PENDING)
+            ).copy(status = TransactionStatus.PENDING)
         every { transactionDraftRepository.findById(draftId) } returns pendingDraft
         every { mappingEngineService.applyMappings(any(), any()) } returns pendingDraft
         every { transactionDraftRepository.save(any()) } returns pendingDraft

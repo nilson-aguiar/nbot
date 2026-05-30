@@ -19,6 +19,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.view
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import org.springframework.web.servlet.view.InternalResourceViewResolver
+import org.thymeleaf.TemplateEngine
 import java.util.*
 
 class BudgetControllerTest {
@@ -26,7 +27,7 @@ class BudgetControllerTest {
     private val transactionDraftRepository = mockk<TransactionDraftRepository>()
     private val actualBudgetService = mockk<ActualBudgetService>()
     private val properties = ActualBudgetProperties(defaultAccountId = "test-account")
-    private val templateEngine = mockk<org.thymeleaf.TemplateEngine>()
+    private val templateEngine = mockk<TemplateEngine>()
     private val sseBudgetEmitterService = mockk<SseBudgetEmitterService>(relaxed = true)
     private val controller =
         BudgetController(

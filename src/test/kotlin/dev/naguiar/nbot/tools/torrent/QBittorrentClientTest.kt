@@ -20,6 +20,7 @@ import org.springframework.test.web.client.match.MockRestRequestMatchers.method
 import org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo
 import org.springframework.test.web.client.response.MockRestResponseCreators.withServerError
 import org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess
+import java.io.File
 
 @RestClientTest(QBittorrentClient::class)
 @Import(QBittorrentConfig::class)
@@ -94,7 +95,7 @@ class QBittorrentClientTest {
 
     @Test
     fun `addTorrentFile should upload multipart file and return true on success`() {
-        val tempFile = java.io.File.createTempFile("test", ".torrent")
+        val tempFile = File.createTempFile("test", ".torrent")
         tempFile.writeText("dummy content")
 
         // Mock login
