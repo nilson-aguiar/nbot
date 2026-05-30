@@ -353,8 +353,7 @@ class CamtMergerService(
             .firstOrNull()
             ?.dt
             ?.dt
-            ?: stmt.creDtTm?.toLocalDate()
-            ?: LocalDate.MAX
+            ?: throw IllegalArgumentException("Missing transaction date")
 }
 
 private fun XMLGregorianCalendar.toLocalDate(): LocalDate = this.toGregorianCalendar().toZonedDateTime().toLocalDate()

@@ -1,4 +1,4 @@
-package dev.naguiar.nbot.presentation.web
+package dev.naguiar.nbot.application
 
 import org.springframework.stereotype.Service
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter

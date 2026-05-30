@@ -1,237 +1,39 @@
 package dev.naguiar.nbot.presentation.web
 
 import dev.naguiar.nbot.application.web.DashboardDataService
-import dev.naguiar.nbot.budget.application.ActualBudgetService
-import dev.naguiar.nbot.budget.application.BudgetImportService
-import dev.naguiar.nbot.budget.application.CamtMergerService
-import dev.naguiar.nbot.budget.domain.TransactionDraftRepository
-import dev.naguiar.nbot.budget.domain.TransactionStatus
-import dev.naguiar.nbot.budget.infrastructure.config.ActualBudgetProperties
 import dev.naguiar.nbot.infrastructure.logging.SseLogEmitterService
-import org.springframework.http.HttpHeaders
-import org.springframework.http.MediaType
-import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
 import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestParam
-import org.springframework.web.multipart.MultipartFile
+import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter
-import java.util.*
 
+@RequestMapping("/dashboard")
 @Controller
 class DashboardController(
     private val dataService: DashboardDataService,
     private val logEmitterService: SseLogEmitterService,
-    private val budgetImportService: BudgetImportService,
-    private val camtMergerService: CamtMergerService,
-    private val transactionDraftRepository: TransactionDraftRepository,
-    private val actualBudgetService: ActualBudgetService,
-    private val properties: ActualBudgetProperties,
-    private val templateEngine: org.thymeleaf.TemplateEngine,
-    private val sseBudgetEmitterService: SseBudgetEmitterService,
 ) {
-    @GetMapping("/")
-    fun index(): String = "redirect:/dashboard"
-
-    @GetMapping("/dashboard")
+    @GetMapping
     fun dashboard(model: Model): String {
         model.addAttribute("tools", dataService.getRegisteredTools())
         model.addAttribute("metrics", dataService.getMetrics())
         return "dashboard"
     }
 
-    @GetMapping("/dashboard/metrics")
+    @GetMapping("/metrics")
     fun metricsFragment(model: Model): String {
         model.addAttribute("metrics", dataService.getMetrics())
         return "fragments/metrics :: metrics"
     }
 
-    @GetMapping("/dashboard/torrents")
+    @GetMapping("/torrents")
     fun torrentsFragment(): String = "fragments/logs :: logs"
 
-    @GetMapping("/dashboard/budget")
-    fun budgetFragment(model: Model): String {
-        model.addAttribute("drafts", transactionDraftRepository.findByStatus(TransactionStatus.PENDING))
-        return "fragments/budget :: budget"
-    }
-
-    @PostMapping("/dashboard/budget/upload")
-    fun uploadCamt(
-        @RequestParam("file") file: MultipartFile,
-        model: Model,
-    ): String {
-        if (!file.isEmpty) {
-            val filename = file.originalFilename?.lowercase() ?: ""
-            if (filename.endsWith(".zip")) {
-                budgetImportService.importZip(file.inputStream)
-            } else {
-                budgetImportService.importCamt(file.inputStream)
-            }
-        }
-        return budgetFragment(model)
-    }
-
-    @PostMapping("/dashboard/budget/approve/{id}")
-    fun approveDraft(
-        @PathVariable("id") id: UUID,
-        model: Model,
-    ): String {
-        transactionDraftRepository.findById(id)?.let { draft ->
-            val approvedDraft = draft.copy(status = TransactionStatus.APPROVED)
-            transactionDraftRepository.save(approvedDraft)
-        }
-        return budgetFragment(model)
-    }
-
-    @PostMapping("/dashboard/budget/sync")
-    fun syncBudget(model: Model): String {
-        actualBudgetService.syncApprovedDrafts(properties.defaultAccountId)
-        return budgetFragment(model)
-    }
-
-    @PostMapping("/dashboard/budget/re-evaluate")
-    fun reEvaluateBudget(
-        @RequestParam(required = false) draftIds: List<UUID>?,
-        model: Model,
-    ): String {
-        if (draftIds.isNullOrEmpty()) {
-            return "fragments/budget :: reEvaluateButton"
-        }
-
-        budgetImportService.reEvaluateAsync(
-            draftIds = draftIds,
-            onProgress = { draft ->
-                val context =
-                    org.thymeleaf.context.Context().apply {
-                        setVariable("draft", draft)
-                        setVariable("oob", true)
-                    }
-                val html = templateEngine.process("fragments/draft-row :: draftRow", context)
-                sseBudgetEmitterService.broadcast(html)
-            },
-            onComplete = {
-                val context =
-                    org.thymeleaf.context
-                        .Context()
-                        .apply { setVariable("oob", true) }
-                val buttonHtml = templateEngine.process("fragments/budget :: reEvaluateButton", context)
-
-                val pendingDrafts = transactionDraftRepository.findByStatus(TransactionStatus.PENDING)
-                context.setVariable("drafts", pendingDrafts)
-                val badgeHtml = templateEngine.process("fragments/budget :: pendingBadge", context)
-
-                sseBudgetEmitterService.broadcast(buttonHtml + badgeHtml)
-            },
-        )
-
-        return "fragments/budget :: reEvaluateButton"
-    }
-
-    @GetMapping("/dashboard/tools")
-    fun toolsFragment(): String = "fragments/tools :: tools"
-
-    @PostMapping("/dashboard/tools/merge-preview")
-    fun mergePreview(
-        @RequestParam("file") file: MultipartFile,
-        session: jakarta.servlet.http.HttpSession,
-        model: Model,
-    ): String {
-        if (!file.isEmpty) {
-            val xmlStrings = camtMergerService.parseZipToStrings(file.inputStream)
-            session.setAttribute("mergePreviewXmls", xmlStrings)
-
-            val previews = camtMergerService.getPreviewsFromStrings(xmlStrings)
-            model.addAttribute("previews", previews)
-        }
-        return "fragments/tools :: preview"
-    }
-
-    @PostMapping("/dashboard/tools/filters")
-    fun saveFilter(
-        @RequestParam(required = false) namePattern: String?,
-        @RequestParam(required = false) ibanPattern: String?,
-        @RequestParam(defaultValue = "false") isStrict: Boolean,
-        session: jakarta.servlet.http.HttpSession,
-        model: Model,
-    ): String {
-        if (!namePattern.isNullOrBlank() || !ibanPattern.isNullOrBlank()) {
-            camtMergerService.saveFilter(
-                dev.naguiar.nbot.budget.domain.CamtFilter(
-                    namePattern = namePattern?.takeIf { it.isNotBlank() },
-                    ibanPattern = ibanPattern?.takeIf { it.isNotBlank() },
-                    isStrict = isStrict,
-                ),
-            )
-        }
-
-        @Suppress("UNCHECKED_CAST")
-        val xmlStrings = session.getAttribute("mergePreviewXmls") as? List<String>
-        if (xmlStrings != null) {
-            val previews = camtMergerService.getPreviewsFromStrings(xmlStrings)
-            model.addAttribute("previews", previews)
-            model.addAttribute("filterSuccess", "Filter added successfully!")
-        }
-
-        return "fragments/tools :: preview"
-    }
-
-    @PostMapping("/dashboard/tools/filters/delete/{id}")
-    fun deleteFilter(
-        @PathVariable("id") id: UUID,
-        session: jakarta.servlet.http.HttpSession,
-        model: Model,
-    ): String {
-        camtMergerService.deleteFilter(id)
-
-        @Suppress("UNCHECKED_CAST")
-        val xmlStrings = session.getAttribute("mergePreviewXmls") as? List<String>
-        if (xmlStrings != null) {
-            val previews = camtMergerService.getPreviewsFromStrings(xmlStrings)
-            model.addAttribute("previews", previews)
-            model.addAttribute("filterDeleted", "Filter removed successfully!")
-        }
-
-        return "fragments/tools :: preview"
-    }
-
-    @PostMapping("/dashboard/tools/merge-xml")
-    fun mergeXml(
-        @RequestParam(value = "excludedIds", required = false) excludedIds: List<String>?,
-        session: jakarta.servlet.http.HttpSession,
-    ): ResponseEntity<ByteArray> {
-        @Suppress("UNCHECKED_CAST")
-        val xmlStrings = session.getAttribute("mergePreviewXmls") as? List<String>
-
-        if (xmlStrings.isNullOrEmpty()) {
-            return ResponseEntity.badRequest().build()
-        }
-
-        val merged = camtMergerService.mergeFromStrings(xmlStrings, excludedIds ?: emptyList())
-
-        // Clean up session
-        session.removeAttribute("mergePreviewXmls")
-
-        return ResponseEntity
-            .ok()
-            .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"merged-camt.xml\"")
-            .contentType(MediaType.APPLICATION_XML)
-            .body(merged)
-    }
-
-    @GetMapping("/dashboard/logs/stream")
+    @GetMapping("/logs/stream")
     fun logStream(): SseEmitter {
         val emitter = SseEmitter(-1L)
         logEmitterService.addEmitter(emitter)
-        return emitter
-    }
-
-    @GetMapping("/dashboard/budget/stream")
-    fun budgetStream(): SseEmitter {
-        val emitter = SseEmitter(-1L)
-        sseBudgetEmitterService.addEmitter(emitter)
         return emitter
     }
 }

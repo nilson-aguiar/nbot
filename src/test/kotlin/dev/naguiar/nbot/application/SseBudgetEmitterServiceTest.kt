@@ -1,5 +1,4 @@
-package dev.naguiar.nbot.presentation.web
-
+package dev.naguiar.nbot.application
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
