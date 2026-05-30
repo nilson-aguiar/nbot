@@ -44,8 +44,8 @@ class CamtParserService {
     }
 
     private fun findBookingDate(entry: ReportEntry2): LocalDate =
-        entry.bookgDt?.dt ?: entry.bookgDt?.dtTm?.toLocalDate()
-            ?: entry.valDt?.dt ?: entry.valDt?.dtTm?.toLocalDate()
+        entry.valDt?.dt ?: entry.valDt?.dtTm?.toLocalDate()
+            ?: entry.bookgDt?.dt ?: entry.bookgDt?.dtTm?.toLocalDate()
             ?: LocalDate.now()
 
     private fun findPayeeName(entry: ReportEntry2): String? {

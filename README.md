@@ -7,13 +7,14 @@
 - **Telegram Bot**: Handles magnet links, `.torrent` file uploads, and CAMT.053 bank statement processing.
 - **qBittorrent Integration**: Automatically forwards torrents to a configured qBittorrent instance.
 - **Budget Management**: Parse bank statements, use AI for intelligent payee mapping, and sync transactions to Actual Budget.
+- **CAMT XML Tools**: Merge multiple bank statements and apply custom IBAN/Name filters to de-duplicate or exclude transactions.
 - **Web Dashboard**: Monitor system metrics (CPU, Memory, Uptime), live execution logs, and manage pending budget drafts in real-time.
 - **Containerized**: Ready for Docker and Kubernetes (Helm).
 
 ## 🛠 Tech Stack
 
 - **Backend**: Kotlin 2.x, Java 25, Spring Boot 3.5.x (following Clean Architecture principles)
-- **Frontend**: HTMX, Thymeleaf, Tailwind CSS (via CDN)
+- **Frontend**: HTMX, Thymeleaf, Vanilla CSS
 - **Infrastructure**: Docker, Docker Compose, Helm (Kubernetes)
 - **CI/CD**: GitHub Actions
 

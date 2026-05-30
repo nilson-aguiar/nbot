@@ -17,7 +17,6 @@ import java.time.LocalDateTime
 import java.time.OffsetDateTime
 import java.util.*
 import java.util.zip.ZipInputStream
-import javax.xml.datatype.XMLGregorianCalendar
 
 @Service
 class CamtMergerService(
@@ -47,7 +46,7 @@ class CamtMergerService(
     private fun parseCamt053(xml: String): MxCamt05300102? =
         try {
             MxCamt05300102.parse(xml)
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             null
         }
 
@@ -119,13 +118,13 @@ class CamtMergerService(
         entry: ReportEntry2,
         stmt: AccountStatement2,
     ): LocalDateTime {
-        // Try booking date
-        entry.bookgDt?.dtTm?.let { return it.toLocalDateTime() }
-        entry.bookgDt?.dt?.let { return it.atStartOfDay() }
-
         // Try value date
         entry.valDt?.dtTm?.let { return it.toLocalDateTime() }
         entry.valDt?.dt?.let { return it.atStartOfDay() }
+
+        // Try booking date
+        entry.bookgDt?.dtTm?.let { return it.toLocalDateTime() }
+        entry.bookgDt?.dt?.let { return it.atStartOfDay() }
 
         // Fallback to statement date
         return stmtDate(stmt).atStartOfDay()
@@ -235,42 +234,6 @@ class CamtMergerService(
         }
     }
 
-    fun mergeZip(
-        inputStream: InputStream,
-        excludedIds: List<String> = emptyList(),
-    ): ByteArray {
-        val documents = parseAllFromZip(inputStream)
-        require(documents.isNotEmpty()) { "ZIP contains no valid CAMT XML files" }
-
-        val merged = merge(documents, excludedIds)
-
-        // Remove 'camt:' namespace prefix to ensure compatibility with simpler parsers like Actual Budget
-        val xmlString =
-            merged
-                .message()
-                .replace("<camt:", "<")
-                .replace("</camt:", "</")
-                .replace("xmlns:camt=", "xmlns=")
-
-        return xmlString.toByteArray(Charsets.UTF_8)
-    }
-
-    private fun parseAllFromZip(inputStream: InputStream): List<MxCamt05300102> {
-        val documents = mutableListOf<MxCamt05300102>()
-        ZipInputStream(inputStream).use { zipStream ->
-            var entry = zipStream.nextEntry
-            while (entry != null) {
-                if (!entry.isDirectory && entry.name.endsWith(".xml", ignoreCase = true)) {
-                    logger.info("Parsing XML entry for merge: {}", entry.name)
-                    val xml = NonClosingInputStream(zipStream).bufferedReader().readText()
-                    documents.add(MxCamt05300102.parse(xml))
-                }
-                entry = zipStream.nextEntry
-            }
-        }
-        return documents
-    }
-
     private fun merge(
         documents: List<MxCamt05300102>,
         excludedIds: List<String>,
@@ -348,8 +311,3 @@ class CamtMergerService(
             ?.dt
             ?: throw IllegalArgumentException("Missing transaction date")
 }
-
-private fun XMLGregorianCalendar.toLocalDate(): LocalDate = this.toGregorianCalendar().toZonedDateTime().toLocalDate()
-
-private fun XMLGregorianCalendar.toLocalDateTime(): LocalDateTime =
-    this.toGregorianCalendar().toZonedDateTime().toLocalDateTime()
