@@ -4,6 +4,7 @@ import dev.naguiar.nbot.application.web.DashboardDataService
 import dev.naguiar.nbot.application.web.MetricsInfo
 import dev.naguiar.nbot.budget.application.ActualBudgetService
 import dev.naguiar.nbot.budget.application.BudgetImportService
+import dev.naguiar.nbot.budget.application.CamtMergerService
 import dev.naguiar.nbot.budget.domain.TransactionDraftRepository
 import dev.naguiar.nbot.budget.domain.TransactionStatus
 import dev.naguiar.nbot.budget.infrastructure.config.ActualBudgetProperties
@@ -28,6 +29,7 @@ class DashboardControllerTest {
     private val dataService = mockk<DashboardDataService>()
     private val logEmitterService = mockk<SseLogEmitterService>(relaxed = true)
     private val budgetImportService = mockk<BudgetImportService>()
+    private val camtMergerService = mockk<CamtMergerService>()
     private val transactionDraftRepository = mockk<TransactionDraftRepository>()
     private val actualBudgetService = mockk<ActualBudgetService>()
     private val properties = ActualBudgetProperties(defaultAccountId = "test-account")
@@ -38,6 +40,7 @@ class DashboardControllerTest {
             dataService,
             logEmitterService,
             budgetImportService,
+            camtMergerService,
             transactionDraftRepository,
             actualBudgetService,
             properties,

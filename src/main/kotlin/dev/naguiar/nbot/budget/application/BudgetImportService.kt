@@ -107,36 +107,3 @@ class BudgetImportService(
         transactionDraftRepository.saveAll(drafts)
     }
 }
-
-/**
- * A wrapper for InputStream that ignores calls to close().
- * This is useful when passing a ZipInputStream to a consumer that might close it
- * (like an XML parser), which would prevent reading further entries from the ZIP.
- */
-private class NonClosingInputStream(
-    private val delegate: InputStream,
-) : InputStream() {
-    override fun read(): Int = delegate.read()
-
-    override fun read(b: ByteArray): Int = delegate.read(b)
-
-    override fun read(
-        b: ByteArray,
-        off: Int,
-        len: Int,
-    ): Int = delegate.read(b, off, len)
-
-    override fun skip(n: Long): Long = delegate.skip(n)
-
-    override fun available(): Int = delegate.available()
-
-    override fun mark(readlimit: Int) = delegate.mark(readlimit)
-
-    override fun reset() = delegate.reset()
-
-    override fun markSupported(): Boolean = delegate.markSupported()
-
-    override fun close() {
-        // Do nothing
-    }
-}

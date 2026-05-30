@@ -3,10 +3,14 @@ package dev.naguiar.nbot.presentation.web
 import dev.naguiar.nbot.application.web.DashboardDataService
 import dev.naguiar.nbot.budget.application.ActualBudgetService
 import dev.naguiar.nbot.budget.application.BudgetImportService
+import dev.naguiar.nbot.budget.application.CamtMergerService
 import dev.naguiar.nbot.budget.domain.TransactionDraftRepository
 import dev.naguiar.nbot.budget.domain.TransactionStatus
 import dev.naguiar.nbot.budget.infrastructure.config.ActualBudgetProperties
 import dev.naguiar.nbot.infrastructure.logging.SseLogEmitterService
+import org.springframework.http.HttpHeaders
+import org.springframework.http.MediaType
+import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
 import org.springframework.web.bind.annotation.GetMapping
@@ -22,6 +26,7 @@ class DashboardController(
     private val dataService: DashboardDataService,
     private val logEmitterService: SseLogEmitterService,
     private val budgetImportService: BudgetImportService,
+    private val camtMergerService: CamtMergerService,
     private val transactionDraftRepository: TransactionDraftRepository,
     private val actualBudgetService: ActualBudgetService,
     private val properties: ActualBudgetProperties,
@@ -123,6 +128,21 @@ class DashboardController(
         )
 
         return "fragments/budget :: reEvaluateButton"
+    }
+
+    @GetMapping("/dashboard/tools")
+    fun toolsFragment(): String = "fragments/tools :: tools"
+
+    @PostMapping("/dashboard/tools/merge-xml")
+    fun mergeXml(
+        @RequestParam("file") file: MultipartFile,
+    ): ResponseEntity<ByteArray> {
+        val merged = camtMergerService.mergeZip(file.inputStream)
+        return ResponseEntity
+            .ok()
+            .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"merged-camt.xml\"")
+            .contentType(MediaType.APPLICATION_XML)
+            .body(merged)
     }
 
     @GetMapping("/dashboard/logs/stream")
