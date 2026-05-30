@@ -1,12 +1,12 @@
 package dev.naguiar.nbot.budget.application
 
 import java.math.BigDecimal
-import java.time.LocalDate
+import java.time.LocalDateTime
 import java.util.*
 
 data class TransactionPreview(
     val id: String,
-    val date: LocalDate,
+    val date: LocalDateTime,
     val amount: BigDecimal,
     val currency: String,
     val name: String,

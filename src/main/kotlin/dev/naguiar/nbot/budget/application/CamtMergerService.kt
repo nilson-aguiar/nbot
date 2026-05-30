@@ -13,9 +13,11 @@ import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import java.io.InputStream
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.OffsetDateTime
 import java.util.*
 import java.util.zip.ZipInputStream
+import javax.xml.datatype.XMLGregorianCalendar
 
 @Service
 class CamtMergerService(
@@ -49,7 +51,7 @@ class CamtMergerService(
                     val preview =
                         TransactionPreview(
                             id = generateId(entry, stmt),
-                            date = stmtDate(stmt),
+                            date = entryDateTime(entry, stmt),
                             amount = entry.amt.value,
                             currency = entry.amt.ccy,
                             name = name,
@@ -60,7 +62,7 @@ class CamtMergerService(
                     applyFilters(preview, filters)
                     preview
                 }
-            }
+            }.sortedByDescending { it.date }
     }
 
     fun mergeFromStrings(
@@ -90,7 +92,7 @@ class CamtMergerService(
                     val preview =
                         TransactionPreview(
                             id = generateId(entry, stmt),
-                            date = stmtDate(stmt),
+                            date = entryDateTime(entry, stmt),
                             amount = entry.amt.value,
                             currency = entry.amt.ccy,
                             name = name,
@@ -101,7 +103,7 @@ class CamtMergerService(
                     applyFilters(preview, filters)
                     preview
                 }
-            }
+            }.sortedByDescending { it.date }
     }
 
     private fun generateId(
@@ -109,7 +111,7 @@ class CamtMergerService(
         stmt: AccountStatement2,
     ): String =
         entry.acctSvcrRef ?: run {
-            val date = stmtDate(stmt).toString()
+            val date = entryDateTime(entry, stmt).toString()
             val amount = entry.amt.value.toString()
             val (name, _) = extractNameAndNotes(entry)
             val iban = extractIban(entry) ?: ""
@@ -119,6 +121,22 @@ class CamtMergerService(
                 .getEncoder()
                 .encodeToString(raw.toByteArray())
         }
+
+    private fun entryDateTime(
+        entry: ReportEntry2,
+        stmt: AccountStatement2,
+    ): LocalDateTime {
+        // Try booking date
+        entry.bookgDt?.dtTm?.let { return it.toLocalDateTime() }
+        entry.bookgDt?.dt?.let { return it.atStartOfDay() }
+
+        // Try value date
+        entry.valDt?.dtTm?.let { return it.toLocalDateTime() }
+        entry.valDt?.dt?.let { return it.atStartOfDay() }
+
+        // Fallback to statement date
+        return stmtDate(stmt).atStartOfDay()
+    }
 
     fun saveFilter(filter: CamtFilter) {
         camtFilterRepository.save(filter)
@@ -338,3 +356,8 @@ class CamtMergerService(
             ?: stmt.creDtTm?.toLocalDate()
             ?: LocalDate.MAX
 }
+
+private fun XMLGregorianCalendar.toLocalDate(): LocalDate = this.toGregorianCalendar().toZonedDateTime().toLocalDate()
+
+private fun XMLGregorianCalendar.toLocalDateTime(): LocalDateTime =
+    this.toGregorianCalendar().toZonedDateTime().toLocalDateTime()

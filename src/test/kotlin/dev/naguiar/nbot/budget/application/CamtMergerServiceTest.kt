@@ -59,7 +59,10 @@ class CamtMergerServiceTest {
         val preview =
             TransactionPreview(
                 id = "1",
-                date = java.time.LocalDate.now(),
+                date =
+                    java.time.LocalDate
+                        .now()
+                        .atStartOfDay(),
                 amount = java.math.BigDecimal.TEN,
                 currency = "EUR",
                 name = "John Doe",
