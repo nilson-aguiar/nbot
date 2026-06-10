@@ -141,6 +141,7 @@ class CamtMergerService(
 
     internal fun extractNameAndNotes(entry: ReportEntry2): Pair<String, String?> {
         // 1. Try structured fields
+        // This will pick up mutated names (with IBAN) if cleanUpEntry already ran.
         entry.ntryDtls?.forEach { details ->
             details.txDtls?.forEach { tx ->
                 tx.rltdPties?.let { parties ->
@@ -150,9 +151,37 @@ class CamtMergerService(
             }
         }
 
+        val ustrdList =
+            entry.ntryDtls
+                ?.flatMap { it.txDtls }
+                ?.flatMap { it.rmtInf?.ustrd ?: emptyList() } ?: emptyList()
+        val allInfo = (listOfNotNull(entry.addtlNtryInf) + ustrdList).distinct()
+
+        // 2. Try SEPA Transfer specific parsing (Name - IBAN) from any source (fallback)
+        for (info in allInfo) {
+            if (info.contains("/TRTP/SEPA OVERBOEKING/")) {
+                val name =
+                    Regex("/NAME/([^/]+)(?:/|$)")
+                        .find(info)
+                        ?.groupValues
+                        ?.get(1)
+                        ?.trim()
+                val iban =
+                    Regex("/IBAN/([^/]+)(?:/|$)")
+                        .find(info)
+                        ?.groupValues
+                        ?.get(1)
+                        ?.trim() ?: extractIban(entry)
+
+                if (name != null && iban != null) {
+                    return "$name - $iban" to (entry.addtlNtryInf ?: info)
+                }
+            }
+        }
+
         val info = entry.addtlNtryInf ?: return "" to null
 
-        // 2. Try BEA/GEA specific parsing
+        // 3. Try BEA/GEA specific parsing
         // [Prefix], [Method]                 [Name]                    [Details]
         // We use a more specific regex that looks for the 'NR:' marker, a date pattern, or a large gap
         // to avoid splitting merchant names that contain double spaces (like "SumUp  *Merchant").
@@ -164,25 +193,6 @@ class CamtMergerService(
             val merchant = cardMatch.groupValues[3].trim()
             val details = cardMatch.groupValues[4].trim().replace(Regex("\\s{2,}"), " ")
             return merchant to "$prefix, $method, $details"
-        }
-
-        // 3. Try SEPA Transfer specific parsing (Name - IBAN)
-        if (info.contains("/TRTP/SEPA OVERBOEKING/")) {
-            val name =
-                Regex("/NAME/([^/]+)(?:/|$)")
-                    .find(info)
-                    ?.groupValues
-                    ?.get(1)
-                    ?.trim()
-            val iban =
-                Regex("/IBAN/([^/]+)(?:/|$)")
-                    .find(info)
-                    ?.groupValues
-                    ?.get(1)
-                    ?.trim()
-            if (name != null && iban != null) {
-                return "$name - $iban" to info
-            }
         }
 
         // 4. Fallback to /NAME/ tag
@@ -314,16 +324,39 @@ class CamtMergerService(
     }
 
     private fun cleanUpEntry(entry: ReportEntry2) {
-        val (name, notes) = extractNameAndNotes(entry)
-        if (name.isNotEmpty() && name != entry.addtlNtryInf) {
-            entry.addtlNtryInf = name
+        val ustrdList =
+            entry.ntryDtls
+                ?.flatMap { it.txDtls }
+                ?.flatMap { it.rmtInf?.ustrd ?: emptyList() } ?: emptyList()
+        val allInfo = (listOfNotNull(entry.addtlNtryInf) + ustrdList).distinct()
+        val isSepa = allInfo.any { it.contains("/TRTP/SEPA OVERBOEKING/") }
 
-            if (notes != null) {
-                val details = entry.ntryDtls?.firstOrNull() ?: EntryDetails1().also { entry.addNtryDtls(it) }
-                val tx = details.txDtls?.firstOrNull() ?: EntryTransaction2().also { details.addTxDtls(it) }
-                val rmtInf = tx.rmtInf ?: RemittanceInformation5().also { tx.rmtInf = it }
-                if (rmtInf.ustrd.isEmpty()) {
-                    rmtInf.addUstrd(notes)
+        if (isSepa) {
+            val iban = extractIban(entry)
+            if (iban != null) {
+                entry.ntryDtls?.forEach { details ->
+                    details.txDtls?.forEach { tx ->
+                        tx.rltdPties?.let { parties ->
+                            parties.cdtr?.let { if (it.nm != null && !it.nm.contains(iban)) it.nm = "${it.nm} - $iban" }
+                            parties.dbtr?.let { if (it.nm != null && !it.nm.contains(iban)) it.nm = "${it.nm} - $iban" }
+                        }
+                    }
+                }
+            }
+            // Do NOT update AddtlNtryInf for SEPA
+        } else {
+            // BEA/GEA cleanup: update AddtlNtryInf and move notes
+            val (name, notes) = extractNameAndNotes(entry)
+            if (name.isNotEmpty() && name != entry.addtlNtryInf) {
+                entry.addtlNtryInf = name
+
+                if (notes != null) {
+                    val details = entry.ntryDtls?.firstOrNull() ?: EntryDetails1().also { entry.addNtryDtls(it) }
+                    val tx = details.txDtls?.firstOrNull() ?: EntryTransaction2().also { details.addTxDtls(it) }
+                    val rmtInf = tx.rmtInf ?: RemittanceInformation5().also { tx.rmtInf = it }
+                    if (rmtInf.ustrd.isEmpty()) {
+                        rmtInf.addUstrd(notes)
+                    }
                 }
             }
         }

@@ -72,7 +72,7 @@ class ToolsController(
 
     @PostMapping("/filters/delete/{id}")
     fun deleteFilter(
-        @PathVariable("id") id: UUID,
+        @PathVariable id: UUID,
         session: HttpSession,
         model: Model,
     ): String {

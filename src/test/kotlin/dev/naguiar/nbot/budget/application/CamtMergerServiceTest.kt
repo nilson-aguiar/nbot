@@ -1,16 +1,7 @@
 package dev.naguiar.nbot.budget.application
 
 import com.prowidesoftware.swift.model.mx.MxCamt05300102
-import com.prowidesoftware.swift.model.mx.dic.AccountStatement2
-import com.prowidesoftware.swift.model.mx.dic.ActiveOrHistoricCurrencyAndAmount
-import com.prowidesoftware.swift.model.mx.dic.BalanceType12
-import com.prowidesoftware.swift.model.mx.dic.BalanceType12Code
-import com.prowidesoftware.swift.model.mx.dic.BalanceType5Choice
-import com.prowidesoftware.swift.model.mx.dic.BankToCustomerStatementV02
-import com.prowidesoftware.swift.model.mx.dic.CashBalance3
-import com.prowidesoftware.swift.model.mx.dic.CreditDebitCode
-import com.prowidesoftware.swift.model.mx.dic.DateAndDateTimeChoice
-import com.prowidesoftware.swift.model.mx.dic.ReportEntry2
+import com.prowidesoftware.swift.model.mx.dic.*
 import dev.naguiar.nbot.budget.domain.CamtFilter
 import dev.naguiar.nbot.budget.domain.CamtFilterRepository
 import io.mockk.every
@@ -261,19 +252,70 @@ class CamtMergerServiceTest {
     }
 
     @Test
-    fun `should format SEPA transfer payee name as Name - IBAN`() {
-        // Given
+    fun `should format SEPA transfer payee name as Literal Structured Name - IBAN while keeping AddtlNtryInf literal`() {
+        // Given - Mimic the structure provided by the user (anonymized)
         val entry =
             ReportEntry2().apply {
-                addtlNtryInf =
-                    "/TRTP/SEPA OVERBOEKING/IBAN/NL99SPAR0123456789/BIC/SPARNL2A/NAME/JANE DOE/EREF/NOTPROVIDED"
+                addtlNtryInf = "JANE D" // Truncated
+                valDt = DateAndDateTimeChoice().apply { dt = LocalDate.now() }
+                amt =
+                    ActiveOrHistoricCurrencyAndAmount().apply {
+                        value = BigDecimal("1750.00")
+                        ccy = "EUR"
+                    }
+                cdtDbtInd = CreditDebitCode.DBIT
+                addNtryDtls(
+                    EntryDetails1().apply {
+                        addTxDtls(
+                            EntryTransaction2().apply {
+                                rltdPties =
+                                    TransactionParty2().apply {
+                                        cdtr = PartyIdentification32().apply { nm = "JANE D" } // Truncated
+                                        cdtrAcct =
+                                            CashAccount16().apply {
+                                                id =
+                                                    AccountIdentification4Choice().apply { iban = "NL99SPAR0123456789" }
+                                            }
+                                    }
+                                rmtInf =
+                                    RemittanceInformation5().apply {
+                                        // Full name in unstructured remittance info, but user wants literal from field
+                                        addUstrd(
+                                            "/TRTP/SEPA OVERBOEKING/IBAN/NL99SPAR0123456789/BIC/SPARNL2A/NAME/JANE DOE/EREF/NOTPROVIDED",
+                                        )
+                                    }
+                            },
+                        )
+                    },
+                )
             }
 
-        // When
-        val (name, _) = camtMergerService.extractNameAndNotes(entry)
+        every { camtFilterRepository.findAll() } returns emptyList()
+
+        // When - Preview performs cleanup
+        val statement =
+            AccountStatement2().apply {
+                ntry.add(entry)
+                bal.add(createBalance(BalanceType12Code.PRCD, LocalDate.now()))
+            }
+        camtMergerService.getPreviewsFromDocuments(
+            listOf(
+                MxCamt05300102().apply {
+                    bkToCstmrStmt = BankToCustomerStatementV02().apply { stmt.add(statement) }
+                },
+            ),
+        )
 
         // Then
-        assertEquals("JANE DOE - NL99SPAR0123456789", name)
+        // 1. Structured name should be updated using its ORIGINAL (literal) value + IBAN
+        assertEquals(
+            "JANE D - NL99SPAR0123456789",
+            entry.ntryDtls[0]
+                .txDtls[0]
+                .rltdPties.cdtr.nm,
+        )
+        // 2. AddtlNtryInf should remain UNCHANGED (literal)
+        assertEquals("JANE D", entry.addtlNtryInf)
     }
 
     private fun createEntry(
