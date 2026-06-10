@@ -18,9 +18,15 @@ ktlint = disabled
 indent_size = 4
 continuation_indent_size = 8
 max_line_length = 120
+ij_kotlin_name_count_to_use_star_import = 2147483647
+ij_kotlin_name_count_to_use_star_import_for_members = 2147483647
 
 [*.{java,xml}]
 indent_size = 4
+
+[*.java]
+ij_java_class_count_to_use_import_on_demand = 2147483647
+ij_java_names_count_to_use_import_on_demand = 2147483647
 
 [*.{yml,yaml,json}]
 indent_size = 2

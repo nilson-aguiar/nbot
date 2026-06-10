@@ -1,7 +1,23 @@
 package dev.naguiar.nbot.budget.application
 
 import com.prowidesoftware.swift.model.mx.MxCamt05300102
-import com.prowidesoftware.swift.model.mx.dic.*
+import com.prowidesoftware.swift.model.mx.dic.AccountIdentification4Choice
+import com.prowidesoftware.swift.model.mx.dic.AccountStatement2
+import com.prowidesoftware.swift.model.mx.dic.ActiveOrHistoricCurrencyAndAmount
+import com.prowidesoftware.swift.model.mx.dic.BalanceType12
+import com.prowidesoftware.swift.model.mx.dic.BalanceType12Code
+import com.prowidesoftware.swift.model.mx.dic.BalanceType5Choice
+import com.prowidesoftware.swift.model.mx.dic.BankToCustomerStatementV02
+import com.prowidesoftware.swift.model.mx.dic.CashAccount16
+import com.prowidesoftware.swift.model.mx.dic.CashBalance3
+import com.prowidesoftware.swift.model.mx.dic.CreditDebitCode
+import com.prowidesoftware.swift.model.mx.dic.DateAndDateTimeChoice
+import com.prowidesoftware.swift.model.mx.dic.EntryDetails1
+import com.prowidesoftware.swift.model.mx.dic.EntryTransaction2
+import com.prowidesoftware.swift.model.mx.dic.PartyIdentification32
+import com.prowidesoftware.swift.model.mx.dic.RemittanceInformation5
+import com.prowidesoftware.swift.model.mx.dic.ReportEntry2
+import com.prowidesoftware.swift.model.mx.dic.TransactionParty2
 import dev.naguiar.nbot.budget.domain.CamtFilter
 import dev.naguiar.nbot.budget.domain.CamtFilterRepository
 import io.mockk.every
@@ -252,7 +268,7 @@ class CamtMergerServiceTest {
     }
 
     @Test
-    fun `should format SEPA transfer payee name as Literal Structured Name - IBAN while keeping AddtlNtryInf literal`() {
+    fun `should format SEPA payee name as Literal Structured Name - IBAN keeping AddtlNtryInf literal`() {
         // Given - Mimic the structure provided by the user (anonymized)
         val entry =
             ReportEntry2().apply {

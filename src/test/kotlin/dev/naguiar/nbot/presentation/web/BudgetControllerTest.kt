@@ -20,7 +20,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.view
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import org.springframework.web.servlet.view.InternalResourceViewResolver
 import org.thymeleaf.TemplateEngine
-import java.util.*
+import java.util.UUID
 
 class BudgetControllerTest {
     private val budgetImportService = mockk<BudgetImportService>()

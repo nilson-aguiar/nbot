@@ -17,7 +17,7 @@ import org.springframework.web.multipart.MultipartFile
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter
 import org.thymeleaf.TemplateEngine
 import org.thymeleaf.context.Context
-import java.util.*
+import java.util.UUID
 
 @RequestMapping("/dashboard/budget")
 @Controller

@@ -2,7 +2,7 @@ package dev.naguiar.nbot.budget.application
 
 import java.math.BigDecimal
 import java.time.LocalDateTime
-import java.util.*
+import java.util.UUID
 
 data class TransactionPreview(
     val id: String,

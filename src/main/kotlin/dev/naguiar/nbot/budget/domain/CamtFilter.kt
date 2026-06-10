@@ -1,6 +1,6 @@
 package dev.naguiar.nbot.budget.domain
 
-import java.util.*
+import java.util.UUID
 
 data class CamtFilter(
     val id: UUID = UUID.randomUUID(),

@@ -22,7 +22,10 @@ class BudgetImportZipTest {
 
     @Test
     fun `should process all XML files in ZIP recursively and use consistent exportFileId`() {
-        val validCamt = """<?xml version="1.0" encoding="UTF-8"?><Document xmlns="urn:iso:std:iso:20022:tech:xsd:camt.053.001.02"><BkToCstmrStmt><Stmt></Stmt></BkToCstmrStmt></Document>"""
+        val validCamt =
+            """<?xml version="1.0" encoding="UTF-8"?>""" +
+                """<Document xmlns="urn:iso:std:iso:20022:tech:xsd:camt.053.001.02">""" +
+                """<BkToCstmrStmt><Stmt></Stmt></BkToCstmrStmt></Document>"""
         val zipContent =
             ByteArrayOutputStream().use { baos ->
                 ZipOutputStream(baos).use { zos ->
