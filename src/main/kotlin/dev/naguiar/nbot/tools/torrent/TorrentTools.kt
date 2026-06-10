@@ -3,6 +3,7 @@ package dev.naguiar.nbot.tools.torrent
 import org.slf4j.LoggerFactory
 import org.springframework.ai.tool.annotation.Tool
 import org.springframework.stereotype.Component
+import java.io.File
 
 @Component
 class TorrentTools(
@@ -36,7 +37,7 @@ class TorrentTools(
     )
     fun addTorrentFile(filePath: String): String {
         log.info("Invoking addTorrentFile tool with path: {}", filePath)
-        val file = java.io.File(filePath)
+        val file = File(filePath)
         if (!file.exists()) return "File not found."
 
         val success = qBittorrentClient.addTorrentFile(file)

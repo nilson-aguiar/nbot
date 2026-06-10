@@ -18,7 +18,8 @@ import org.springframework.web.service.invoker.createClient
 class QBittorrentConfig {
     @Bean
     @ConditionalOnProperty(name = ["nbot.qbittorrent.use-buffering"], havingValue = "true", matchIfMissing = true)
-    fun qBittorrentRequestFactory(): ClientHttpRequestFactory = BufferingClientHttpRequestFactory(JdkClientHttpRequestFactory())
+    fun qBittorrentRequestFactory(): ClientHttpRequestFactory =
+        BufferingClientHttpRequestFactory(JdkClientHttpRequestFactory())
 
     @Bean
     fun qBittorrentApi(

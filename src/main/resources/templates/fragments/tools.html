@@ -1,0 +1,99 @@
+<div th:fragment="tools" class="flex flex-col gap-6" id="tools-container">
+    <div class="card p-6">
+        <h2 class="text-sm font-semibold uppercase tracking-wider text-gray-400 mb-4">Merge CAMT XMLs</h2>
+        <p class="text-sm text-gray-400 mb-4">Upload a ZIP file containing multiple CAMT XML bank statements. You can preview and filter transactions before merging.</p>
+        <form hx-post="/dashboard/tools/merge-preview" hx-target="#tools-container" hx-encoding="multipart/form-data" class="flex gap-4">
+            <input type="file" name="file" accept=".zip" class="flex-grow bg-[#0d1117] border border-[#30363d] rounded p-2 text-sm">
+            <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm font-medium transition-colors">
+                Preview &amp; Filter
+            </button>
+        </form>
+    </div>
+</div>
+
+<div th:fragment="preview" class="flex flex-col gap-6" id="tools-container">
+    <div class="card p-6">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-sm font-semibold uppercase tracking-wider text-gray-400">Transaction Preview</h2>
+            <div class="flex gap-2">
+                <button class="px-3 py-1 text-xs rounded border border-[#30363d] hover:bg-gray-800" onclick="filterTable('all')">All</button>
+                <button class="px-3 py-1 text-xs rounded border border-[#30363d] hover:bg-gray-800" onclick="filterTable('kept')">Kept</button>
+                <button class="px-3 py-1 text-xs rounded border border-[#30363d] hover:bg-gray-800" onclick="filterTable('filtered')">Filtered</button>
+            </div>
+        </div>
+
+        <div id="filter-feedback-container" class="mb-4">
+            <div th:if="${filterSuccess}" class="bg-green-900/20 border border-green-900 text-green-400 px-4 py-2 rounded text-xs" th:text="${filterSuccess}"></div>
+            <div th:if="${filterDeleted}" class="bg-red-900/20 border border-red-900 text-red-400 px-4 py-2 rounded text-xs" th:text="${filterDeleted}"></div>
+        </div>
+
+        <form action="/dashboard/tools/merge-xml" method="POST">
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm text-left">
+                    <thead class="text-xs text-gray-400 uppercase border-b border-[#30363d]">
+                        <tr>
+                            <th class="px-4 py-3 w-10">#</th>
+                            <th class="px-4 py-3 w-10">Exclude</th>
+                            <th class="px-4 py-3 w-32">Date</th>
+                            <th class="px-4 py-3">Name</th>
+                            <th class="px-4 py-3">Notes</th>
+                            <th class="px-4 py-3">IBAN</th>
+                            <th class="px-4 py-3 text-right">Amount</th>
+                            <th class="px-4 py-3 text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="p, iterStat : ${previews}" 
+                            th:class="${p.isFiltered ? 'transaction-row filtered opacity-50 border-b border-[#30363d]' : 'transaction-row kept border-b border-[#30363d]'}" 
+                            th:data-filtered="${p.isFiltered}">
+                            <td class="px-4 py-3 text-gray-400 font-mono text-sm" th:text="${iterStat.count}"></td>
+                            <td class="px-4 py-3">
+                                <input type="checkbox" name="excludedIds" th:value="${p.id}" th:checked="${p.isFiltered}" class="rounded bg-[#0d1117] border-[#30363d] text-blue-600 focus:ring-blue-600 focus:ring-offset-[#0d1117]">
+                            </td>
+                            <td class="px-4 py-3 text-gray-400 whitespace-nowrap" 
+                                th:text="${#temporals.hour(p.date) == 0 && #temporals.minute(p.date) == 0 ? #temporals.format(p.date, 'dd/MM/yyyy') : #temporals.format(p.date, 'dd/MM/yyyy HH:mm')}"></td>
+                            <td class="px-4 py-3 font-medium" th:text="${p.name}"></td>
+                            <td class="px-4 py-3 text-gray-500 text-xs truncate max-w-xs" th:text="${p.notes}" th:title="${p.notes}"></td>
+                            <td class="px-4 py-3 text-gray-400 font-mono text-xs" th:text="${p.iban}"></td>
+                            <td th:class="${p.isDebit ? 'px-4 py-3 font-medium text-right text-red-400' : 'px-4 py-3 font-medium text-right text-green-400'}"
+                                th:text="${(p.isDebit ? '-' : '+') + p.amount}"></td>
+                            <td class="px-4 py-3 text-right whitespace-nowrap">
+                                <button type="button"
+                                        th:if="${!p.isFiltered}" 
+                                        hx-post="/dashboard/tools/filters" 
+                                        th:hx-vals="${'js:{namePattern: ''' + p.name.replace('''', '\\''') + ''', ibanPattern: ''' + p.iban + ''', isStrict: true}'}"
+                                        hx-target="#tools-container"
+                                        class="text-xs text-blue-400 hover:underline">
+                                    Filter Payee
+                                </button>
+                                <button type="button"
+                                        th:if="${p.isFiltered and p.matchedFilterId != null}" 
+                                        th:hx-post="${'/dashboard/tools/filters/delete/' + p.matchedFilterId}" 
+                                        hx-target="#tools-container"
+                                        class="text-xs text-red-400 hover:underline">
+                                    Remove Filter
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="mt-6 flex justify-end">
+                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded text-sm font-medium transition-colors">
+                    Merge &amp; Download
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        function filterTable(view) {
+            document.querySelectorAll('.transaction-row').forEach(row => {
+                if (view === 'all') row.style.display = '';
+                else if (view === 'kept') row.style.display = row.dataset.filtered === 'true' ? 'none' : '';
+                else if (view === 'filtered') row.style.display = row.dataset.filtered === 'true' ? '' : 'none';
+            });
+        }
+    </script>
+</div>

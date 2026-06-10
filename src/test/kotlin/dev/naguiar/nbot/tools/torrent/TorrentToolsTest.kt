@@ -7,6 +7,7 @@ import io.mockk.junit5.MockKExtension
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
+import java.io.File
 
 @ExtendWith(MockKExtension::class)
 class TorrentToolsTest {
@@ -38,7 +39,7 @@ class TorrentToolsTest {
 
     @Test
     fun `addTorrentFile should return success message when file exists and client returns true`() {
-        val tempFile = java.io.File.createTempFile("test", ".torrent")
+        val tempFile = File.createTempFile("test", ".torrent")
         try {
             every { qBittorrentClient.addTorrentFile(tempFile) } returns true
 
@@ -53,7 +54,7 @@ class TorrentToolsTest {
 
     @Test
     fun `addTorrentFile should return failure message when file exists but client returns false`() {
-        val tempFile = java.io.File.createTempFile("test", ".torrent")
+        val tempFile = File.createTempFile("test", ".torrent")
         try {
             every { qBittorrentClient.addTorrentFile(tempFile) } returns false
 

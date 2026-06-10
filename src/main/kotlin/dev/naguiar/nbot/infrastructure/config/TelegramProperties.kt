@@ -7,4 +7,5 @@ data class TelegramProperties(
     val enabled: Boolean,
     val allowedUsers: List<Long> = emptyList(),
     val telegramBotToken: String,
+    val dashboardUrl: String = "http://localhost:8080",
 )

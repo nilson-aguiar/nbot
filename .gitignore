@@ -44,3 +44,5 @@ out/
 .env
 .worktrees/
 .docker_data/
+./sample/
+./docs/superpowers

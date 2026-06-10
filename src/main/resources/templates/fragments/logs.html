@@ -1,0 +1,9 @@
+<div th:fragment="logs" class="card flex-grow flex flex-col overflow-hidden">
+    <div class="p-4 border-b border-gray-700 flex justify-between items-center">
+        <h2 class="text-sm font-semibold uppercase tracking-wider text-gray-400">Live Execution Logs</h2>
+    </div>
+    <div class="p-4 flex-grow overflow-y-auto bg-black font-mono text-sm" 
+         hx-ext="sse" sse-connect="/dashboard/logs/stream" sse-swap="message" hx-swap="beforeend">
+        <div class="text-gray-500 italic">Waiting for logs...</div>
+    </div>
+</div>

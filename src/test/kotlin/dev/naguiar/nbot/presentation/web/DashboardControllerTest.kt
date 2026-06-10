@@ -16,7 +16,11 @@ import org.springframework.web.servlet.view.InternalResourceViewResolver
 class DashboardControllerTest {
     private val dataService = mockk<DashboardDataService>()
     private val logEmitterService = mockk<SseLogEmitterService>(relaxed = true)
-    private val controller = DashboardController(dataService, logEmitterService)
+    private val controller =
+        DashboardController(
+            dataService,
+            logEmitterService,
+        )
     private val mockMvc =
         MockMvcBuilders
             .standaloneSetup(controller)
@@ -48,6 +52,14 @@ class DashboardControllerTest {
             .andExpect(status().isOk)
             .andExpect(view().name("fragments/metrics :: metrics"))
             .andExpect(model().attributeExists("metrics"))
+    }
+
+    @Test
+    fun `should return torrents fragment`() {
+        mockMvc
+            .perform(get("/dashboard/torrents"))
+            .andExpect(status().isOk)
+            .andExpect(view().name("fragments/logs :: logs"))
     }
 
     @Test
