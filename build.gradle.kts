@@ -158,3 +158,7 @@ tasks.withType<org.jlleitschuh.gradle.ktlint.tasks.BaseKtLintCheckTask> {
 tasks.withType<org.jlleitschuh.gradle.ktlint.tasks.KtLintFormatTask> {
     mustRunAfter(tasks.openApiGenerate)
 }
+
+tasks.bootJar {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
