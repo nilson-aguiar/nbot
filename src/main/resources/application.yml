@@ -30,6 +30,13 @@ nbot:
     allowed-users: ${ALLOWED_USERS:}
     telegram-bot-token: ${TELEGRAM_BOT_TOKEN:}
     dashboard-url: ${DASHBOARD_URL:http://localhost:8080}
+  whatsapp:
+    enabled: ${WHATSAPP_ENABLED:false}
+    allowed-numbers: ${WHATSAPP_ALLOWED_NUMBERS:}
+    verify-token: ${WHATSAPP_VERIFY_TOKEN:}
+    api-token: ${WHATSAPP_API_TOKEN:}
+    phone-number-id: ${WHATSAPP_PHONE_NUMBER_ID:}
+    dashboard-url: ${DASHBOARD_URL:http://localhost:8080}
   qbittorrent:
     url: ${QBITTORRENT_URL:http://localhost:8090}
     username: ${QBITTORRENT_USERNAME:admin}
