@@ -33,7 +33,7 @@ class DashboardDataService(
                         tools.add(ToolInfo(method.name, annotation.description))
                     }
                 }
-            } catch (e: Exception) {
+            } catch (_: Exception) {
                 // Ignore beans that cannot be instantiated or accessed
             }
         }

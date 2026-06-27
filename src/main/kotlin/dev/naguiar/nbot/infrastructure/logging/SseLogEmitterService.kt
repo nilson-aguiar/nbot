@@ -19,7 +19,7 @@ class SseLogEmitterService {
         emitters.forEach { emitter ->
             try {
                 emitter.send(SseEmitter.event().name("message").data(message))
-            } catch (e: Exception) {
+            } catch (_: Exception) {
                 deadEmitters.add(emitter)
             }
         }

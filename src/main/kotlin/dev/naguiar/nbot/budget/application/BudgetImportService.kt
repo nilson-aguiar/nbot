@@ -83,30 +83,9 @@ class BudgetImportService(
     private fun parseCamt053(xml: String): MxCamt05300102? =
         try {
             MxCamt05300102.parse(xml)
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             null
         }
-
-    fun reEvaluatePending() {
-        logger.info("Starting re-evaluation of pending transactions")
-        val pendingDrafts = transactionDraftRepository.findByStatus(TransactionStatus.PENDING)
-        if (pendingDrafts.isEmpty()) {
-            logger.info("No pending drafts to re-evaluate")
-            return
-        }
-
-        val payees = actualBudgetService.getPayees()
-        logger.info("Fetched {} payees for re-evaluation", payees.size)
-
-        val updatedDrafts =
-            pendingDrafts.map { draft ->
-                val updatedDraft = mappingEngineService.applyMappings(draft, payees)
-                transactionDraftRepository.save(updatedDraft)
-                updatedDraft
-            }
-
-        logger.info("Re-evaluation complete for {} drafts", updatedDrafts.size)
-    }
 
     private fun processCamtStream(
         inputStream: InputStream,

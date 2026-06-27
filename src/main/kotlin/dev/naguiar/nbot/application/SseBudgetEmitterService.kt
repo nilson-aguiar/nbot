@@ -19,7 +19,7 @@ class SseBudgetEmitterService {
         emitters.forEach { emitter ->
             try {
                 emitter.send(SseEmitter.event().data(html))
-            } catch (e: Exception) {
+            } catch (_: Exception) {
                 deadEmitters.add(emitter)
             }
         }
