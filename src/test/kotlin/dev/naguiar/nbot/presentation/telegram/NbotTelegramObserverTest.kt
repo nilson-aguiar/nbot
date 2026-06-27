@@ -1,15 +1,13 @@
 package dev.naguiar.nbot.presentation.telegram
 
-import dev.naguiar.nbot.budget.application.BudgetImportService
+import dev.naguiar.nbot.application.BotMessageDispatcher
 import dev.naguiar.nbot.infrastructure.config.TelegramProperties
-import dev.naguiar.nbot.tools.torrent.TorrentTools
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.spyk
 import io.mockk.verify
 import java.io.File
-import java.io.InputStream
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -23,14 +21,13 @@ import org.telegram.telegrambots.meta.api.objects.User
 
 class NbotTelegramObserverTest {
     private val telegramProperties = mockk<TelegramProperties>()
-    private val torrentTools = mockk<TorrentTools>()
-    private val budgetImportService = mockk<BudgetImportService>()
+    private val botMessageDispatcher = mockk<BotMessageDispatcher>()
     private lateinit var observer: NbotTelegramObserver
 
     @BeforeEach
     fun setUp() {
         every { telegramProperties.telegramBotToken } returns "fake-token"
-        observer = spyk(NbotTelegramObserver(telegramProperties, torrentTools, budgetImportService))
+        observer = spyk(NbotTelegramObserver(telegramProperties, botMessageDispatcher))
     }
 
     @Test
@@ -120,10 +117,11 @@ class NbotTelegramObserverTest {
         every { document.fileName } returns "test.torrent"
         every { document.fileId } returns "file123"
         every { telegramProperties.allowedUsers } returns listOf(1L)
+        every { telegramProperties.dashboardUrl } returns "http://localhost:8080"
 
         every { observer.execute(any<GetFile>()) } returns telegramFile
         every { observer.downloadFile(telegramFile) } returns tempFile
-        every { torrentTools.addTorrentFile(any()) } returns "Torrent added successfully"
+        every { botMessageDispatcher.processDocument(any(), any(), any()) } returns "Torrent added successfully"
 
         val sendMessageSlot = slot<SendMessage>()
         every { observer.execute(capture(sendMessageSlot)) } returns mockk()
@@ -159,7 +157,8 @@ class NbotTelegramObserverTest {
 
         every { observer.execute(any<GetFile>()) } returns telegramFile
         every { observer.downloadFile(telegramFile) } returns tempFile
-        every { budgetImportService.importCamt(any<InputStream>()) } returns "export-123"
+        every { botMessageDispatcher.processDocument(any(), any(), any()) } returns
+            "Successfully imported transactions. Review them on the dashboard: http://localhost:8080/dashboard"
 
         val sendMessageSlot = slot<SendMessage>()
         every { observer.execute(capture(sendMessageSlot)) } returns mockk()
@@ -200,6 +199,6 @@ class NbotTelegramObserverTest {
 
         observer.onUpdateReceived(update)
 
-        assertEquals("Failed to download and process the torrent file.", sendMessageSlot.captured.text)
+        assertEquals("Failed to download and process the file.", sendMessageSlot.captured.text)
     }
 }
