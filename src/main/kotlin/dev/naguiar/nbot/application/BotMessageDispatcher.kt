@@ -2,10 +2,10 @@ package dev.naguiar.nbot.application
 
 import dev.naguiar.nbot.budget.application.BudgetImportService
 import dev.naguiar.nbot.tools.torrent.TorrentTools
-import org.slf4j.LoggerFactory
-import org.springframework.stereotype.Service
 import java.io.File
 import java.io.InputStream
+import org.slf4j.LoggerFactory
+import org.springframework.stereotype.Service
 
 @Service
 class BotMessageDispatcher(

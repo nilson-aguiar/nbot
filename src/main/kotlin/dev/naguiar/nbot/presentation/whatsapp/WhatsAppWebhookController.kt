@@ -61,8 +61,14 @@ class WhatsAppWebhookController(
                     }
 
                     when (message.type) {
-                        "text" -> handleTextMessage(from, message.text?.body)
-                        "document" -> handleDocumentMessage(from, message.document)
+                        "text" -> {
+                            handleTextMessage(from, message.text?.body)
+                        }
+
+                        "document" -> {
+                            handleDocumentMessage(from, message.document)
+                        }
+
                         else -> {
                             log.info("Received unsupported message type: {}", message.type)
                             whatsAppClient.sendTextMessage(from, "Default answer: I cannot handle your message.")

@@ -5,10 +5,10 @@ import dev.naguiar.nbot.infrastructure.config.WhatsAppProperties
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
+import java.io.ByteArrayInputStream
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.springframework.http.HttpStatus
-import java.io.ByteArrayInputStream
 
 class WhatsAppWebhookControllerTest {
     private val whatsAppClient: WhatsAppClient = mockk(relaxed = true)

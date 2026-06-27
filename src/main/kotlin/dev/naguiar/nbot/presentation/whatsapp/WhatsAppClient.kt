@@ -1,13 +1,13 @@
 package dev.naguiar.nbot.presentation.whatsapp
 
 import dev.naguiar.nbot.infrastructure.config.WhatsAppProperties
+import java.io.InputStream
 import org.slf4j.LoggerFactory
 import org.springframework.core.io.Resource
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Service
 import org.springframework.web.client.RestClient
-import java.io.InputStream
 
 @Service
 class WhatsAppClient(

@@ -5,9 +5,9 @@ import dev.naguiar.nbot.tools.torrent.TorrentTools
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
+import java.io.ByteArrayInputStream
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
-import java.io.ByteArrayInputStream
 
 class BotMessageDispatcherTest {
     private val torrentTools: TorrentTools = mockk()
