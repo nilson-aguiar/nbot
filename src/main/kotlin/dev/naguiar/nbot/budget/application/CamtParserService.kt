@@ -4,9 +4,9 @@ import com.prowidesoftware.swift.model.mx.MxCamt05300102
 import com.prowidesoftware.swift.model.mx.dic.CreditDebitCode
 import com.prowidesoftware.swift.model.mx.dic.ReportEntry2
 import dev.naguiar.nbot.budget.domain.TransactionDraft
-import org.springframework.stereotype.Service
 import java.io.InputStream
 import java.time.LocalDate
+import org.springframework.stereotype.Service
 
 @Service
 class CamtParserService {

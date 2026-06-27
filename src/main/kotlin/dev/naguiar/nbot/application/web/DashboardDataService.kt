@@ -1,10 +1,10 @@
 package dev.naguiar.nbot.application.web
 
 import io.micrometer.core.instrument.MeterRegistry
+import kotlin.math.roundToInt
 import org.springframework.ai.tool.annotation.Tool
 import org.springframework.context.ApplicationContext
 import org.springframework.stereotype.Service
-import kotlin.math.roundToInt
 
 data class ToolInfo(
     val name: String,
@@ -33,7 +33,7 @@ class DashboardDataService(
                         tools.add(ToolInfo(method.name, annotation.description))
                     }
                 }
-            } catch (e: Exception) {
+            } catch (_: Exception) {
                 // Ignore beans that cannot be instantiated or accessed
             }
         }

@@ -1,6 +1,7 @@
 package dev.naguiar.nbot.tools.torrent
 
 import dev.naguiar.nbot.infrastructure.config.QBittorrentConfig
+import java.io.File
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -20,7 +21,6 @@ import org.springframework.test.web.client.match.MockRestRequestMatchers.method
 import org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo
 import org.springframework.test.web.client.response.MockRestResponseCreators.withServerError
 import org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess
-import java.io.File
 
 @RestClientTest(QBittorrentClient::class)
 @Import(QBittorrentConfig::class)

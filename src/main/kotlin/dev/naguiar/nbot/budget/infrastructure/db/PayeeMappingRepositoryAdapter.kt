@@ -2,8 +2,8 @@ package dev.naguiar.nbot.budget.infrastructure.db
 
 import dev.naguiar.nbot.budget.domain.PayeeMapping
 import dev.naguiar.nbot.budget.domain.PayeeMappingRepository
-import org.springframework.stereotype.Component
 import java.util.UUID
+import org.springframework.stereotype.Component
 
 @Component
 class PayeeMappingRepositoryAdapter(

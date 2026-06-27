@@ -4,9 +4,9 @@ import dev.naguiar.nbot.budget.domain.CamtFilter
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
+import java.util.UUID
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
-import java.util.UUID
 
 class CamtFilterRepositoryAdapterTest {
     private val jpaRepository = mockk<JpaCamtFilterRepository>()

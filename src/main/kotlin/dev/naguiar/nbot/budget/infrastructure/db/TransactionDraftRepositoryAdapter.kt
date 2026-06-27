@@ -3,8 +3,8 @@ package dev.naguiar.nbot.budget.infrastructure.db
 import dev.naguiar.nbot.budget.domain.TransactionDraft
 import dev.naguiar.nbot.budget.domain.TransactionDraftRepository
 import dev.naguiar.nbot.budget.domain.TransactionStatus
-import org.springframework.stereotype.Repository
 import java.util.UUID
+import org.springframework.stereotype.Repository
 
 @Repository
 class TransactionDraftRepositoryAdapter(

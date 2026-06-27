@@ -4,14 +4,14 @@ import com.prowidesoftware.swift.model.mx.MxCamt05300102
 import dev.naguiar.nbot.budget.domain.TransactionDraft
 import dev.naguiar.nbot.budget.domain.TransactionDraftRepository
 import dev.naguiar.nbot.budget.domain.TransactionStatus
-import org.slf4j.LoggerFactory
-import org.springframework.scheduling.annotation.Async
-import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Transactional
 import java.io.InputStream
 import java.util.UUID
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.zip.ZipInputStream
+import org.slf4j.LoggerFactory
+import org.springframework.scheduling.annotation.Async
+import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 
 @Service
 class BudgetImportService(
@@ -83,30 +83,9 @@ class BudgetImportService(
     private fun parseCamt053(xml: String): MxCamt05300102? =
         try {
             MxCamt05300102.parse(xml)
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             null
         }
-
-    fun reEvaluatePending() {
-        logger.info("Starting re-evaluation of pending transactions")
-        val pendingDrafts = transactionDraftRepository.findByStatus(TransactionStatus.PENDING)
-        if (pendingDrafts.isEmpty()) {
-            logger.info("No pending drafts to re-evaluate")
-            return
-        }
-
-        val payees = actualBudgetService.getPayees()
-        logger.info("Fetched {} payees for re-evaluation", payees.size)
-
-        val updatedDrafts =
-            pendingDrafts.map { draft ->
-                val updatedDraft = mappingEngineService.applyMappings(draft, payees)
-                transactionDraftRepository.save(updatedDraft)
-                updatedDraft
-            }
-
-        logger.info("Re-evaluation complete for {} drafts", updatedDrafts.size)
-    }
 
     private fun processCamtStream(
         inputStream: InputStream,

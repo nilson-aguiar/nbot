@@ -1,9 +1,9 @@
 package dev.naguiar.nbot.tools.torrent
 
+import java.io.File
 import org.slf4j.LoggerFactory
 import org.springframework.ai.tool.annotation.Tool
 import org.springframework.stereotype.Component
-import java.io.File
 
 @Component
 class TorrentTools(

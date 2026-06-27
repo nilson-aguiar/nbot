@@ -6,6 +6,7 @@ import dev.naguiar.nbot.budget.application.BudgetImportService
 import dev.naguiar.nbot.budget.domain.TransactionDraftRepository
 import dev.naguiar.nbot.budget.domain.TransactionStatus
 import dev.naguiar.nbot.budget.infrastructure.config.ActualBudgetProperties
+import java.util.UUID
 import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
 import org.springframework.web.bind.annotation.GetMapping
@@ -17,7 +18,6 @@ import org.springframework.web.multipart.MultipartFile
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter
 import org.thymeleaf.TemplateEngine
 import org.thymeleaf.context.Context
-import java.util.UUID
 
 @RequestMapping("/dashboard/budget")
 @Controller

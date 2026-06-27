@@ -8,18 +8,18 @@ import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.spyk
 import io.mockk.verify
+import java.io.File
+import java.io.InputStream
+import kotlin.test.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.telegram.telegrambots.meta.api.methods.GetFile
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage
 import org.telegram.telegrambots.meta.api.objects.Document
+import org.telegram.telegrambots.meta.api.objects.File as TelegramFile
 import org.telegram.telegrambots.meta.api.objects.Message
 import org.telegram.telegrambots.meta.api.objects.Update
 import org.telegram.telegrambots.meta.api.objects.User
-import java.io.File
-import java.io.InputStream
-import kotlin.test.assertEquals
-import org.telegram.telegrambots.meta.api.objects.File as TelegramFile
 
 class NbotTelegramObserverTest {
     private val telegramProperties = mockk<TelegramProperties>()

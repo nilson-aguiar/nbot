@@ -1,8 +1,8 @@
 package dev.naguiar.nbot.application
 
+import java.util.concurrent.CopyOnWriteArrayList
 import org.springframework.stereotype.Service
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter
-import java.util.concurrent.CopyOnWriteArrayList
 
 @Service
 class SseBudgetEmitterService {
@@ -19,7 +19,7 @@ class SseBudgetEmitterService {
         emitters.forEach { emitter ->
             try {
                 emitter.send(SseEmitter.event().data(html))
-            } catch (e: Exception) {
+            } catch (_: Exception) {
                 deadEmitters.add(emitter)
             }
         }

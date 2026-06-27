@@ -41,6 +41,12 @@ nbot:
     encryption-password: ${ACTUAL_BUDGET_ENCRYPTION_PASSWORD:}
     default-account-id: ${ACTUAL_BUDGET_DEFAULT_ACCOUNT_ID:}
     internal-accounts: ${ACTUAL_BUDGET_INTERNAL_ACCOUNTS:}
+  socialschools:
+    url: ${SOCIALSCHOOLS_URL:}
+    username: ${SOCIALSCHOOLS_USERNAME:}
+    password: ${SOCIALSCHOOLS_PASSWORD:}
+    login-url: ${SOCIALSCHOOLS_LOGIN_URL:}
+    download-dir: ${SOCIALSCHOOLS_DOWNLOAD_DIR:}
 
 management:
   endpoints:

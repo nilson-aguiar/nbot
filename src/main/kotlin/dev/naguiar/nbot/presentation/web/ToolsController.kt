@@ -4,6 +4,7 @@ import com.prowidesoftware.swift.model.mx.MxCamt05300102
 import dev.naguiar.nbot.budget.application.CamtMergerService
 import dev.naguiar.nbot.budget.domain.CamtFilter
 import jakarta.servlet.http.HttpSession
+import java.util.UUID
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
@@ -15,7 +16,6 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.multipart.MultipartFile
-import java.util.UUID
 
 @RequestMapping("/dashboard/tools")
 @Controller

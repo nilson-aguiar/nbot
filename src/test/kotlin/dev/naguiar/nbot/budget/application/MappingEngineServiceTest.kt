@@ -8,9 +8,9 @@ import dev.naguiar.nbot.budget.infrastructure.config.ActualBudgetProperties
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
+import java.time.LocalDate
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
-import java.time.LocalDate
 
 class MappingEngineServiceTest {
     private val repository = mockk<PayeeMappingRepository>()

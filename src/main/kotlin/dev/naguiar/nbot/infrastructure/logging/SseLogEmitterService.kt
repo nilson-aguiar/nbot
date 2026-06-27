@@ -1,8 +1,8 @@
 package dev.naguiar.nbot.infrastructure.logging
 
+import java.util.concurrent.CopyOnWriteArrayList
 import org.springframework.stereotype.Service
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter
-import java.util.concurrent.CopyOnWriteArrayList
 
 @Service
 class SseLogEmitterService {
@@ -19,7 +19,7 @@ class SseLogEmitterService {
         emitters.forEach { emitter ->
             try {
                 emitter.send(SseEmitter.event().name("message").data(message))
-            } catch (e: Exception) {
+            } catch (_: Exception) {
                 deadEmitters.add(emitter)
             }
         }

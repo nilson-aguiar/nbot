@@ -2,8 +2,8 @@ package dev.naguiar.nbot.budget.infrastructure.db
 
 import dev.naguiar.nbot.budget.domain.CamtFilter
 import dev.naguiar.nbot.budget.domain.CamtFilterRepository
-import org.springframework.stereotype.Component
 import java.util.UUID
+import org.springframework.stereotype.Component
 
 @Component
 class CamtFilterRepositoryAdapter(
