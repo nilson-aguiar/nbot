@@ -2,6 +2,7 @@ package dev.naguiar.nbot.presentation.telegram
 
 import dev.naguiar.nbot.application.BotMessageDispatcher
 import dev.naguiar.nbot.infrastructure.config.TelegramProperties
+import java.io.FileInputStream
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 import org.telegram.telegrambots.bots.TelegramLongPollingBot
