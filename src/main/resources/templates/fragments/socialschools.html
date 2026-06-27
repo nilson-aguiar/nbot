@@ -1,0 +1,72 @@
+<div th:fragment="socialschools" class="flex flex-col gap-6" id="socialschools-container">
+    <div class="card p-6">
+        <div class="flex justify-between items-center">
+            <div>
+                <h2 class="text-sm font-semibold uppercase tracking-wider text-gray-400">Social Schools Media Downloader</h2>
+                <p class="text-sm text-gray-400 mt-1">Check and manage downloaded photo/video albums from Social Schools.</p>
+            </div>
+            <div class="flex gap-3">
+                <button hx-post="/dashboard/socialschools/clear" 
+                        hx-target="#main-content" 
+                        hx-confirm="Are you sure you want to delete all album records from the database?"
+                        class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded text-sm font-medium transition-colors">
+                    Clear Data
+                </button>
+                <button hx-post="/dashboard/socialschools/check" 
+                        hx-target="#main-content" 
+                        hx-indicator="#loading-spinner"
+                        class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm font-medium transition-colors flex items-center gap-2">
+                    <span>Check for New Albums</span>
+                    <!-- Spinner loading indicator (hidden by default, shown when HTMX is loading) -->
+                    <svg id="loading-spinner" class="htmx-indicator animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Table of Albums -->
+    <div class="card p-6">
+        <h2 class="text-sm font-semibold uppercase tracking-wider text-gray-400 mb-4">Albums</h2>
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm text-left">
+                <thead class="text-xs text-gray-400 uppercase border-b border-[#30363d]">
+                    <tr>
+                        <th class="px-4 py-3">Album Name</th>
+                        <th class="px-4 py-3">Date</th>
+                        <th class="px-4 py-3">Status</th>
+                        <th class="px-4 py-3">Last Downloaded</th>
+                        <th class="px-4 py-3 text-right">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="album : ${albums}" class="border-b border-[#30363d] hover:bg-gray-800/40">
+                        <td class="px-4 py-3 font-medium text-gray-200" th:text="${album.name}"></td>
+                        <td class="px-4 py-3 text-gray-400" th:text="${album.formattedDate}"></td>
+                        <td class="px-4 py-3">
+                            <span th:if="${album.filename != null}" class="bg-green-900/40 border border-green-800 text-green-400 text-xs px-2 py-0.5 rounded-full">Downloaded</span>
+                            <span th:if="${album.filename == null}" class="bg-yellow-900/40 border border-yellow-800 text-yellow-400 text-xs px-2 py-0.5 rounded-full">Pending</span>
+                        </td>
+                        <td class="px-4 py-3 text-gray-400 font-mono text-xs" 
+                            th:text="${album.formattedDownloadedAt ?: 'Never'}"></td>
+                        <td class="px-4 py-3 text-right">
+                            <a th:if="${album.filename != null}" 
+                               th:href="@{/dashboard/socialschools/files/{filename}(filename=${album.filename})}" 
+                               class="text-xs text-blue-400 hover:underline inline-flex items-center gap-1">
+                                📥 Download ZIP
+                            </a>
+                            <span th:if="${album.filename == null}" class="text-xs text-gray-500">Not available</span>
+                        </td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(albums)}">
+                        <td colspan="5" class="px-4 py-8 text-center text-gray-500">
+                            No albums found. Click "Check for New Albums" to start scanning.
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
