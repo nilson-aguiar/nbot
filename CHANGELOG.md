@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.1.0](https://github.com/nilson-aguiar/nbot/compare/v1.0.0...v1.1.0) (2026-06-27)
+
+
+### Features
+
+* implement Social Schools media management ([#33](https://github.com/nilson-aguiar/nbot/issues/33)) ([0411a97](https://github.com/nilson-aguiar/nbot/commit/0411a97e2c90985f98f47c1816acab35d41323ae))
+
+
+### Bug Fixes
+
+* **deps:** update all non-major dependencies ([#29](https://github.com/nilson-aguiar/nbot/issues/29)) ([917449b](https://github.com/nilson-aguiar/nbot/commit/917449b4222ecc4c649fa7b152b818b7b617e34a))
+* **deps:** update dependency com.microsoft.playwright:playwright to v1.60.0 ([#34](https://github.com/nilson-aguiar/nbot/issues/34)) ([4bd0345](https://github.com/nilson-aguiar/nbot/commit/4bd0345b57940da5dbb3c5b0dbcb4a9ae1220f9f))
+
 ## 1.0.0 (2026-04-27)
 
 
