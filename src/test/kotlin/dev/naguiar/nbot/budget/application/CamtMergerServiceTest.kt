@@ -22,13 +22,13 @@ import dev.naguiar.nbot.budget.domain.CamtFilter
 import dev.naguiar.nbot.budget.domain.CamtFilterRepository
 import io.mockk.every
 import io.mockk.mockk
+import java.math.BigDecimal
+import java.time.LocalDate
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.springframework.core.io.ClassPathResource
-import java.math.BigDecimal
-import java.time.LocalDate
 
 class CamtMergerServiceTest {
     private val camtFilterRepository = mockk<CamtFilterRepository>()

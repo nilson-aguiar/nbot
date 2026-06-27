@@ -3,6 +3,7 @@ package dev.naguiar.nbot.presentation.web
 import dev.naguiar.nbot.infrastructure.config.SocialSchoolsProperties
 import dev.naguiar.nbot.tools.socialschools.SocialSchoolsAlbumRepository
 import dev.naguiar.nbot.tools.socialschools.SocialSchoolsClient
+import java.nio.file.Paths
 import org.springframework.core.io.FileSystemResource
 import org.springframework.core.io.Resource
 import org.springframework.http.HttpHeaders
@@ -14,7 +15,6 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
-import java.nio.file.Paths
 
 @RequestMapping("/dashboard/socialschools")
 @Controller

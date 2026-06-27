@@ -6,13 +6,13 @@ import dev.naguiar.nbot.budget.domain.TransactionStatus
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
-import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.Test
 import java.io.InputStream
 import java.time.LocalDate
 import java.util.UUID
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
+import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.Test
 
 class BudgetImportServiceTest {
     private val camtParserService = mockk<CamtParserService>()

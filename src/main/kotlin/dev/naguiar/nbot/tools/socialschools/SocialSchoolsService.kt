@@ -1,11 +1,11 @@
 package dev.naguiar.nbot.tools.socialschools
 
 import dev.naguiar.nbot.infrastructure.config.SocialSchoolsProperties
+import java.nio.file.Files
+import java.nio.file.Paths
 import org.slf4j.LoggerFactory
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
-import java.nio.file.Files
-import java.nio.file.Paths
 
 @Service
 class SocialSchoolsService(

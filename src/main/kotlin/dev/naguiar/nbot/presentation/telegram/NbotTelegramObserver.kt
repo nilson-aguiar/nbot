@@ -3,6 +3,8 @@ package dev.naguiar.nbot.presentation.telegram
 import dev.naguiar.nbot.budget.application.BudgetImportService
 import dev.naguiar.nbot.infrastructure.config.TelegramProperties
 import dev.naguiar.nbot.tools.torrent.TorrentTools
+import java.io.File
+import java.io.FileInputStream
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 import org.telegram.telegrambots.bots.TelegramLongPollingBot
@@ -12,8 +14,6 @@ import org.telegram.telegrambots.meta.api.objects.Document
 import org.telegram.telegrambots.meta.api.objects.Message
 import org.telegram.telegrambots.meta.api.objects.Update
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException
-import java.io.File
-import java.io.FileInputStream
 
 @Component
 class NbotTelegramObserver(

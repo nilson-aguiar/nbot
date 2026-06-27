@@ -13,8 +13,6 @@ import com.prowidesoftware.swift.model.mx.dic.RemittanceInformation5
 import com.prowidesoftware.swift.model.mx.dic.ReportEntry2
 import dev.naguiar.nbot.budget.domain.CamtFilter
 import dev.naguiar.nbot.budget.domain.CamtFilterRepository
-import org.slf4j.LoggerFactory
-import org.springframework.stereotype.Service
 import java.io.InputStream
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -22,6 +20,8 @@ import java.time.OffsetDateTime
 import java.util.Base64
 import java.util.UUID
 import java.util.zip.ZipInputStream
+import org.slf4j.LoggerFactory
+import org.springframework.stereotype.Service
 
 @Service
 class CamtMergerService(

@@ -1,7 +1,7 @@
 package dev.naguiar.nbot.budget.domain
 
-import org.springframework.transaction.annotation.Transactional
 import java.util.UUID
+import org.springframework.transaction.annotation.Transactional
 
 interface TransactionDraftRepository {
     @Transactional(readOnly = true)

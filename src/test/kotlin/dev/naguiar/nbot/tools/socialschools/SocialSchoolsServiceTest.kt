@@ -5,10 +5,10 @@ import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
 import io.mockk.verify
+import java.nio.file.Paths
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
-import java.nio.file.Paths
 
 @ExtendWith(MockKExtension::class)
 class SocialSchoolsServiceTest {

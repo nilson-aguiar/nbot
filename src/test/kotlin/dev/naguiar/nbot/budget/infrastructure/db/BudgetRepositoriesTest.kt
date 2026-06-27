@@ -3,6 +3,7 @@ package dev.naguiar.nbot.budget.infrastructure.db
 import dev.naguiar.nbot.budget.domain.PayeeMapping
 import dev.naguiar.nbot.budget.domain.TransactionDraft
 import dev.naguiar.nbot.budget.domain.TransactionStatus
+import java.time.LocalDate
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -13,7 +14,6 @@ import org.springframework.context.annotation.Import
 import org.testcontainers.containers.PostgreSQLContainer
 import org.testcontainers.junit.jupiter.Container
 import org.testcontainers.junit.jupiter.Testcontainers
-import java.time.LocalDate
 
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)

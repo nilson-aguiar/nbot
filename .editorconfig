@@ -15,27 +15,17 @@ ktlint = disabled
 
 [*.{kt,kts}]
 # Official Kotlin Style: https://kotlinlang.org/docs/coding-conventions.html
-indent_size = 4
-continuation_indent_size = 8
 max_line_length = 120
 ij_kotlin_name_count_to_use_star_import = 2147483647
 ij_kotlin_name_count_to_use_star_import_for_members = 2147483647
-
-[*.{java,xml}]
-indent_size = 4
-
-[*.java]
-ij_java_class_count_to_use_import_on_demand = 2147483647
-ij_java_names_count_to_use_import_on_demand = 2147483647
+ij_kotlin_packages_to_use_import_on_demand = unset
+ij_kotlin_imports_layout = *
 
 [*.{yml,yaml,json}]
 indent_size = 2
 
 [*.md]
 trim_trailing_whitespace = false
-
-[*.sh]
-end_of_line = lf
 
 [*.bat]
 end_of_line = crlf

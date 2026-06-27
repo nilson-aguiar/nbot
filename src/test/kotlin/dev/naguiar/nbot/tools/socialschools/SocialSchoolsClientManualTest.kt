@@ -1,11 +1,11 @@
 package dev.naguiar.nbot.tools.socialschools
 
 import dev.naguiar.nbot.infrastructure.config.SocialSchoolsProperties
-import org.junit.jupiter.api.Disabled
-import org.junit.jupiter.api.Test
 import java.io.File
 import java.nio.file.Paths
-import java.util.*
+import java.util.Properties
+import org.junit.jupiter.api.Disabled
+import org.junit.jupiter.api.Test
 
 @Disabled("Manual test requiring real credentials and browser context")
 class SocialSchoolsClientManualTest {

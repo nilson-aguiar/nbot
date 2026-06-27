@@ -5,10 +5,10 @@ import com.microsoft.playwright.Playwright
 import com.microsoft.playwright.options.AriaRole
 import com.microsoft.playwright.options.Cookie
 import dev.naguiar.nbot.infrastructure.config.SocialSchoolsProperties
-import org.slf4j.LoggerFactory
-import org.springframework.stereotype.Service
 import java.nio.file.Files
 import java.nio.file.Path
+import org.slf4j.LoggerFactory
+import org.springframework.stereotype.Service
 
 @Service
 class SocialSchoolsClient(

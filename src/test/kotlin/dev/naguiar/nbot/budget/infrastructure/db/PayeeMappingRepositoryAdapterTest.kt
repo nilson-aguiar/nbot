@@ -4,10 +4,10 @@ import dev.naguiar.nbot.budget.domain.PayeeMapping
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
-import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.Test
 import java.util.Optional
 import java.util.UUID
+import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.Test
 
 class PayeeMappingRepositoryAdapterTest {
     private val jpaRepository = mockk<JpaPayeeMappingRepository>()

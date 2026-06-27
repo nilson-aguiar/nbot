@@ -1,9 +1,9 @@
 package dev.naguiar.nbot.budget.application
 
+import java.time.LocalDate
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.springframework.core.io.ClassPathResource
-import java.time.LocalDate
 
 class CamtParserServiceTest {
     private val camtParserService = CamtParserService()

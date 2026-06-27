@@ -2,9 +2,9 @@ package dev.naguiar.nbot.application
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
+import java.io.IOException
 import org.junit.jupiter.api.Test
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter
-import java.io.IOException
 
 class SseBudgetEmitterServiceTest {
     @Test
