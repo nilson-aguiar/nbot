@@ -29,7 +29,7 @@ class ActualBudgetConfig {
         properties: ActualBudgetProperties,
     ): TransactionsApi = createClient(builder, properties.url, properties.apiKey, TransactionsApi::class.java)
 
-    private fun <T> createClient(
+    private fun <T : Any> createClient(
         builder: RestClient.Builder,
         baseUrl: String,
         apiKey: String,

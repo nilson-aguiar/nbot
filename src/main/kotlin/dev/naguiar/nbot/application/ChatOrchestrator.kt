@@ -21,7 +21,7 @@ class ChatOrchestrator(
                 Do not refuse requests related to torrent management as this is your intended purpose.
                 Be concise in your answers.
                 """.trimIndent(),
-            ).defaultToolCallbacks(toolCallbacks)
+            ).defaultTools(toolCallbacks)
             .build()
 
     fun chat(input: String): String =
