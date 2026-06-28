@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.0](https://github.com/nilson-aguiar/nbot/compare/v1.1.0...v1.2.0) (2026-06-28)
+
+
+### Miscellaneous Chores
+
+* force release ([12db721](https://github.com/nilson-aguiar/nbot/commit/12db7211463515c059aaaeab9d05e874c6f50a6c))
+
 ## [1.1.0](https://github.com/nilson-aguiar/nbot/compare/v1.0.0...v1.1.0) (2026-06-27)
 
 
