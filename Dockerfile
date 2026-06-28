@@ -4,7 +4,7 @@ COPY . .
 RUN ./gradlew build -x test
 
 FROM mcr.microsoft.com/playwright/java:v1.60.0-noble
-COPY --from=eclipse-temurin:25-jre /opt/java/openjdk /opt/java/openjdk
+COPY --from=eclipse-temurin:25.0.3_9-jre /opt/java/openjdk /opt/java/openjdk
 ENV JAVA_HOME=/opt/java/openjdk
 ENV PATH="${JAVA_HOME}/bin:${PATH}"
 WORKDIR /app
