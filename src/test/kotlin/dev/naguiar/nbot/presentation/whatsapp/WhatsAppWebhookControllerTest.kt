@@ -179,7 +179,7 @@ class WhatsAppWebhookControllerTest {
 
         val fakeInputStream = ByteArrayInputStream("xml data".toByteArray())
         every { whatsAppClient.downloadMedia("media-789") } returns fakeInputStream
-        every { botMessageDispatcher.processDocument("statement.xml", any(), "http://localhost:8080") } returns
+        every { botMessageDispatcher.processDocument("statement.xml", any()) } returns
             "Imported successfully"
 
         val response = controller.receiveWebhook(payload)

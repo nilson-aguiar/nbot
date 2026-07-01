@@ -4,7 +4,6 @@ plugins {
     id("org.springframework.boot") version "4.1.0"
     id("io.spring.dependency-management") version "1.1.7"
     kotlin("plugin.jpa") version "2.4.0"
-    id("org.openapi.generator") version "7.23.0"
     id("org.jlleitschuh.gradle.ktlint") version "14.2.0"
     jacoco
 }
@@ -65,9 +64,6 @@ dependencyManagement {
 }
 
 kotlin {
-    sourceSets.main {
-        kotlin.srcDir(layout.buildDirectory.dir("generated/openapi/src/main/kotlin"))
-    }
     compilerOptions {
         freeCompilerArgs.addAll("-Xjsr305=strict")
     }
@@ -88,11 +84,6 @@ tasks.jacocoTestReport {
         xml.required.set(true)
         html.required.set(true)
     }
-    classDirectories.setFrom(
-        sourceSets.main.get().output.asFileTree.matching {
-            exclude("dev/naguiar/nbot/budget/infrastructure/api/generated/**")
-        },
-    )
 }
 
 tasks.jacocoTestCoverageVerification {
@@ -103,11 +94,6 @@ tasks.jacocoTestCoverageVerification {
             }
         }
     }
-    classDirectories.setFrom(
-        sourceSets.main.get().output.asFileTree.matching {
-            exclude("dev/naguiar/nbot/budget/infrastructure/api/generated/**")
-        },
-    )
 }
 
 ktlint {
@@ -119,48 +105,13 @@ ktlint {
     }
     filter {
         exclude { element ->
-            element.file.path.contains("/build/") ||
-                element.file.path.contains("/generated/openapi/")
+            element.file.path.contains("/build/")
         }
     }
 }
 
 tasks.check {
     dependsOn(tasks.jacocoTestCoverageVerification)
-}
-
-openApiGenerate {
-    generatorName.set("kotlin-spring")
-    library.set("spring-declarative-http-interface")
-    inputSpec.set("$projectDir/src/main/resources/api/actual-budget-swagger.json")
-    outputDir.set(
-        layout.buildDirectory
-            .dir("generated/openapi")
-            .get()
-            .asFile.absolutePath,
-    )
-    apiPackage.set("dev.naguiar.nbot.budget.infrastructure.api.generated")
-    modelPackage.set("dev.naguiar.nbot.budget.infrastructure.api.generated.model")
-    validateSpec.set(true)
-    configOptions.set(
-        mapOf(
-            "useSpringBoot3" to "true",
-            "useBeanValidation" to "true",
-            "enumPropertyNaming" to "original",
-        ),
-    )
-}
-
-tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
-    dependsOn(tasks.openApiGenerate)
-}
-
-tasks.withType<org.jlleitschuh.gradle.ktlint.tasks.BaseKtLintCheckTask> {
-    mustRunAfter(tasks.openApiGenerate)
-}
-
-tasks.withType<org.jlleitschuh.gradle.ktlint.tasks.KtLintFormatTask> {
-    mustRunAfter(tasks.openApiGenerate)
 }
 
 tasks.bootJar {
