@@ -121,7 +121,7 @@ class NbotTelegramObserverTest {
 
         every { observer.execute(any<GetFile>()) } returns telegramFile
         every { observer.downloadFile(telegramFile) } returns tempFile
-        every { botMessageDispatcher.processDocument(any(), any(), any()) } returns "Torrent added successfully"
+        every { botMessageDispatcher.processDocument(any(), any()) } returns "Torrent added successfully"
 
         val sendMessageSlot = slot<SendMessage>()
         every { observer.execute(capture(sendMessageSlot)) } returns mockk()
@@ -157,7 +157,7 @@ class NbotTelegramObserverTest {
 
         every { observer.execute(any<GetFile>()) } returns telegramFile
         every { observer.downloadFile(telegramFile) } returns tempFile
-        every { botMessageDispatcher.processDocument(any(), any(), any()) } returns
+        every { botMessageDispatcher.processDocument(any(), any()) } returns
             "Successfully imported transactions. Review them on the dashboard: http://localhost:8080/dashboard"
 
         val sendMessageSlot = slot<SendMessage>()
