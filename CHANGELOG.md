@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.1](https://github.com/nilson-aguiar/nbot/compare/v1.2.0...v1.2.1) (2026-07-02)
+
+
+### Bug Fixes
+
+* **deps:** update all non-major dependencies to v1.61.0 ([#41](https://github.com/nilson-aguiar/nbot/issues/41)) ([046165b](https://github.com/nilson-aguiar/nbot/commit/046165b23264837d183c0f9488d11dbab072dbb9))
+
 ## [1.2.0](https://github.com/nilson-aguiar/nbot/compare/v1.1.0...v1.2.0) (2026-06-28)
 
 
