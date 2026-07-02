@@ -41,13 +41,6 @@ nbot:
     url: ${QBITTORRENT_URL:http://localhost:8090}
     username: ${QBITTORRENT_USERNAME:admin}
     password: ${QBITTORRENT_PASSWORD:adminadmin}
-  actual-budget:
-    url: ${ACTUAL_BUDGET_URL:http://localhost:5007/v1}
-    api-key: ${ACTUAL_BUDGET_API_KEY:}
-    sync-id: ${ACTUAL_BUDGET_SYNC_ID:}
-    encryption-password: ${ACTUAL_BUDGET_ENCRYPTION_PASSWORD:}
-    default-account-id: ${ACTUAL_BUDGET_DEFAULT_ACCOUNT_ID:}
-    internal-accounts: ${ACTUAL_BUDGET_INTERNAL_ACCOUNTS:}
   socialschools:
     url: ${SOCIALSCHOOLS_URL:}
     username: ${SOCIALSCHOOLS_USERNAME:}

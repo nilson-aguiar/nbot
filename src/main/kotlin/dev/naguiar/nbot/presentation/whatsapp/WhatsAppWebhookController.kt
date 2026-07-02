@@ -118,7 +118,6 @@ class WhatsAppWebhookController(
                 botMessageDispatcher.processDocument(
                     fileName = filename,
                     inputStream = inputStream,
-                    dashboardUrl = properties.dashboardUrl,
                 )
             whatsAppClient.sendTextMessage(from, reply)
         }

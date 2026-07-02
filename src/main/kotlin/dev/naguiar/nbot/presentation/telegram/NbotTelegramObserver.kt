@@ -63,7 +63,6 @@ class NbotTelegramObserver(
                     botMessageDispatcher.processDocument(
                         fileName = fileName,
                         inputStream = inputStream,
-                        dashboardUrl = telegramProperties.dashboardUrl,
                     )
                 }
             sendReply(message.chatId, replyText)
