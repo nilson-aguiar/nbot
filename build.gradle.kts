@@ -1,7 +1,7 @@
 plugins {
     kotlin("jvm") version "2.4.0"
     kotlin("plugin.spring") version "2.4.0"
-    id("org.springframework.boot") version "4.1.0"
+    id("org.springframework.boot") version "4.1.1"
     id("io.spring.dependency-management") version "1.1.7"
     kotlin("plugin.jpa") version "2.4.0"
     id("org.jlleitschuh.gradle.ktlint") version "14.2.0"
@@ -21,8 +21,8 @@ repositories {
     mavenCentral()
 }
 
-extra["springAiVersion"] = "2.0.0"
-extra["springCloudVersion"] = "2025.1.2"
+extra["springAiVersion"] = "2.0.1"
+extra["springCloudVersion"] = "2025.1.3"
 
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter-actuator")
