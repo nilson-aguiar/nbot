@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.2.1](https://github.com/nilson-aguiar/nbot/compare/v1.2.0...v1.2.1) (2026-10-27)
+
+
+### Bug Fixes
+
+* **deps:** update all non-major dependencies to v1.61.0 ([#41](https://github.com/nilson-aguiar/nbot/issues/41)) ([046165b](https://github.com/nilson-aguiar/nbot/commit/046165b23264837d183c0f9488d11dbab072dbb9))
+* **deps:** update spring dependencies ([#45](https://github.com/nilson-aguiar/nbot/issues/45)) ([8a76707](https://github.com/nilson-aguiar/nbot/commit/8a76707a1d189ed0a17a3078afd90fec27981f60))
+
 ## [1.2.0](https://github.com/nilson-aguiar/nbot/compare/v1.1.0...v1.2.0) (2026-06-28)
 
 
