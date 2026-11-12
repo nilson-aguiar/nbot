@@ -1,9 +1,9 @@
 plugins {
-    kotlin("jvm") version "2.4.0"
-    kotlin("plugin.spring") version "2.4.0"
+    kotlin("jvm") version "2.4.21"
+    kotlin("plugin.spring") version "2.4.21"
     id("org.springframework.boot") version "4.1.2"
     id("io.spring.dependency-management") version "1.1.7"
-    kotlin("plugin.jpa") version "2.4.0"
+    kotlin("plugin.jpa") version "2.4.21"
     id("org.jlleitschuh.gradle.ktlint") version "14.2.0"
     jacoco
 }
@@ -40,7 +40,7 @@ dependencies {
     implementation("org.telegram:telegrambots-spring-boot-starter:6.9.7.1")
     implementation("org.apache.httpcomponents.client5:httpclient5")
     implementation("com.prowidesoftware:pw-iso20022:SRU2025-10.3.8")
-    implementation("com.microsoft.playwright:playwright:1.61.0")
+    implementation("com.microsoft.playwright:playwright:1.65.0")
     developmentOnly("org.springframework.boot:spring-boot-devtools")
     runtimeOnly("io.micrometer:micrometer-registry-prometheus")
     runtimeOnly("org.postgresql:postgresql")
@@ -49,7 +49,7 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-starter-restclient-test")
     testImplementation("org.springframework.boot:spring-boot-testcontainers")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
-    testImplementation("io.mockk:mockk:1.14.11")
+    testImplementation("io.mockk:mockk:1.14.12")
     testImplementation("org.testcontainers:testcontainers:2.0.5")
     testImplementation("org.testcontainers:testcontainers-junit-jupiter:2.0.5")
     testImplementation("org.testcontainers:testcontainers-postgresql:2.0.5")
