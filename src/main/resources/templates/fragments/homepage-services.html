@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<div id="services-container" th:fragment="services" class="space-y-6">
+    <!-- Error Banner -->
+    <div th:if="${homepage.error != null}"
+         class="card p-4 border-amber-500/40 bg-amber-950/20 text-amber-200 text-sm flex items-center justify-between gap-4">
+        <span th:text="${homepage.error}">Unable to load IngressRoutes.</span>
+    </div>
+
+    <!-- Empty State -->
+    <div th:if="${#lists.isEmpty(homepage.groups)}" class="card p-8 text-center text-gray-400">
+        <p class="text-sm">No IngressRoutes discovered yet.</p>
+    </div>
+
+    <!-- Namespace Groups -->
+    <section th:each="group : ${homepage.groups}"
+             th:attr="data-namespace-group=${group.namespace}"
+             class="space-y-3">
+        <div class="flex items-center gap-2 px-1">
+            <h2 class="text-xs font-semibold uppercase tracking-wider text-gray-400" th:text="${group.namespace}">
+                namespace
+            </h2>
+            <span class="text-xs px-2 py-0.5 rounded-full bg-[#21262d] text-gray-400 font-mono"
+                  th:text="${#lists.size(group.services)}">
+                0
+            </span>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+            <a th:each="svc : ${group.services}"
+               th:href="${svc.url}"
+               target="_blank"
+               rel="noopener noreferrer"
+               th:attr="data-service-card=true, data-search=${svc.name + ' ' + svc.primaryHost + ' ' + #strings.listJoin(svc.secondaryHosts, ' ')}"
+               class="service-card p-4 flex flex-col justify-between gap-3 group">
+                <div class="flex items-start justify-between gap-2">
+                    <div class="min-w-0">
+                        <div class="font-semibold text-gray-100 group-hover:text-blue-400 transition-colors truncate"
+                             th:text="${svc.name}">
+                            service
+                        </div>
+                        <div class="text-xs font-mono text-gray-400 truncate mt-0.5"
+                             th:text="${svc.primaryHost}">
+                            service.local.naguiar.dev
+                        </div>
+                    </div>
+                    <span th:if="${svc.tls}"
+                          class="shrink-0 text-[10px] font-mono px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                        HTTPS
+                    </span>
+                    <span th:unless="${svc.tls}"
+                          class="shrink-0 text-[10px] font-mono px-1.5 py-0.5 rounded bg-gray-700/40 text-gray-400 border border-gray-600/30">
+                        HTTP
+                    </span>
+                </div>
+
+                <div th:if="${!#lists.isEmpty(svc.secondaryHosts)}" class="flex flex-wrap gap-1.5">
+                    <span th:each="alt : ${svc.secondaryHosts}"
+                          th:text="${alt}"
+                          class="text-[11px] font-mono text-gray-500 bg-[#0d1117] px-1.5 py-0.5 rounded border border-[#30363d] truncate max-w-full">
+                        service.naguiar.dev
+                    </span>
+                </div>
+            </a>
+        </div>
+    </section>
+</div>
+</body>
+</html>
