@@ -9,6 +9,7 @@
 - **Budget Management**: Parse bank statements, use AI for intelligent payee mapping, and sync transactions to Actual Budget.
 - **CAMT XML Tools**: Merge multiple bank statements and apply custom IBAN/Name filters to de-duplicate or exclude transactions.
 - **Web Dashboard**: Monitor system metrics (CPU, Memory, Uptime), live execution logs, and manage pending budget drafts in real-time.
+- **Homelab Homepage**: Discovers all Traefik `IngressRoute` resources in the Kubernetes cluster and presents them at `/` grouped by namespace (see [Kubernetes RBAC setup](docs/kubernetes-rbac.md)).
 - **Containerized**: Ready for Docker and Kubernetes (Helm).
 
 ## 🛠 Tech Stack

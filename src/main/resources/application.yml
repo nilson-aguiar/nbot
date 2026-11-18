@@ -47,6 +47,9 @@ nbot:
     password: ${SOCIALSCHOOLS_PASSWORD:}
     login-url: ${SOCIALSCHOOLS_LOGIN_URL:}
     download-dir: ${SOCIALSCHOOLS_DOWNLOAD_DIR:}
+  homepage:
+    enabled: ${HOMEPAGE_K8S_ENABLED:true}
+    cache-ttl-seconds: ${HOMEPAGE_CACHE_TTL_SECONDS:30}
 
 management:
   endpoints:
