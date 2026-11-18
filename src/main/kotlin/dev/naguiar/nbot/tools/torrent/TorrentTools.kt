@@ -1,8 +1,8 @@
 package dev.naguiar.nbot.tools.torrent
 
+import dev.naguiar.nbot.tools.BotTool
 import java.io.File
 import org.slf4j.LoggerFactory
-import org.springframework.ai.tool.annotation.Tool
 import org.springframework.stereotype.Component
 
 @Component
@@ -11,7 +11,7 @@ class TorrentTools(
 ) {
     private val log = LoggerFactory.getLogger(TorrentTools::class.java)
 
-    @Tool(
+    @BotTool(
         description =
             """
                Mandatory: Adds a torrent to qBittorrent using a magnet link. 
@@ -28,7 +28,7 @@ class TorrentTools(
         }
     }
 
-    @Tool(
+    @BotTool(
         description =
             """
                Mandatory: Adds a .torrent file to qBittorrent using its absolute file path. 

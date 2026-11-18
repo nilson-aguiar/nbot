@@ -21,7 +21,6 @@ repositories {
     mavenCentral()
 }
 
-extra["springAiVersion"] = "2.0.2"
 extra["springCloudVersion"] = "2025.1.4"
 
 dependencies {
@@ -32,9 +31,6 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-webflux")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
-    implementation("org.springframework.ai:spring-ai-starter-model-chat-memory-repository-jdbc")
-    implementation("org.springframework.ai:spring-ai-starter-model-google-genai")
-    implementation("org.springframework.ai:spring-ai-starter-model-ollama")
     implementation("org.springframework.cloud:spring-cloud-starter-circuitbreaker-resilience4j")
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.telegram:telegrambots-spring-boot-starter:6.9.7.1")
@@ -59,7 +55,6 @@ dependencies {
 
 dependencyManagement {
     imports {
-        mavenBom("org.springframework.ai:spring-ai-bom:${property("springAiVersion")}")
         mavenBom("org.springframework.cloud:spring-cloud-dependencies:${property("springCloudVersion")}")
     }
 }

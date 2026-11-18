@@ -1,26 +1,21 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>Gemini Torrents Dashboard</title>
+    <title>nbot Dashboard</title>
     <script src="https://unpkg.com/htmx.org@1.9.10"></script>
     <script src="https://unpkg.com/htmx.org/dist/ext/sse.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { background-color: #0d1117; color: #c9d1d9; }
         .card { background-color: #161b22; border: 1px solid #30363d; border-radius: 0.5rem; }
+        .service-card { background-color: #161b22; border: 1px solid #30363d; border-radius: 0.5rem; transition: border-color 0.15s ease, transform 0.15s ease; }
+        .service-card:hover { border-color: #58a6ff; transform: translateY(-1px); }
     </style>
 </head>
 <body class="p-8">
     <div class="max-w-7xl mx-auto flex gap-8">
         <!-- Sidebar -->
         <div class="w-80 flex flex-col gap-6">
-            <div class="card p-6">
-                <h2 class="text-sm font-semibold uppercase tracking-wider text-gray-400 mb-4">Infrastructure</h2>
-                <div id="metrics-container" hx-get="/dashboard/metrics" hx-trigger="every 2s">
-                    <div th:replace="~{fragments/metrics :: metrics}"></div>
-                </div>
-            </div>
-
             <div class="card p-6 flex-grow">
                 <h2 class="text-sm font-semibold uppercase tracking-wider text-gray-400 mb-4">Registered Tools</h2>
                 <ul class="space-y-3">
@@ -65,7 +60,7 @@
 
         <!-- Main Content -->
         <div id="main-content" class="flex-grow flex flex-col gap-6">
-            <div th:replace="~{fragments/logs :: logs}"></div>
+            <div th:replace="~{fragments/homepage-services :: services}"></div>
         </div>
     </div>
 </body>

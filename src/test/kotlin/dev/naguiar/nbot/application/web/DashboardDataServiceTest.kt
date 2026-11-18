@@ -1,8 +1,6 @@
 package dev.naguiar.nbot.application.web
 
-import io.micrometer.core.instrument.Gauge
-import io.micrometer.core.instrument.MeterRegistry
-import io.micrometer.core.instrument.search.Search
+import dev.naguiar.nbot.tools.BotTool
 import io.mockk.every
 import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -11,33 +9,23 @@ import org.springframework.context.ApplicationContext
 
 class DashboardDataServiceTest {
     private val ctx = mockk<ApplicationContext>()
-    private val meterRegistry = mockk<MeterRegistry>()
-    private val service = DashboardDataService(ctx, meterRegistry)
+    private val service = DashboardDataService(ctx)
 
-    @Test
-    fun `should retrieve metrics`() {
-        val gauge = mockk<Gauge>()
-        every { gauge.value() } returns 0.05
+    class SampleToolBean {
+        @BotTool(description = "Sample description")
+        fun sampleTool(): String = "ok"
 
-        val search = mockk<Search>()
-        every { meterRegistry.find("system.cpu.usage") } returns search
-        every { search.gauge() } returns gauge
-
-        val metrics = service.getMetrics()
-
-        assertEquals(5, metrics.cpuLoad)
-        assertEquals(342, metrics.latencyMs)
+        fun nonToolMethod(): String = "ignored"
     }
 
     @Test
-    fun `should handle missing metrics`() {
-        every { meterRegistry.find(any()) } returns
-            mockk {
-                every { gauge() } returns null
-            }
+    fun `should discover methods annotated with BotTool`() {
+        every { ctx.beanDefinitionNames } returns arrayOf("sampleToolBean", "brokenBean")
+        every { ctx.getBean("sampleToolBean") } returns SampleToolBean()
+        every { ctx.getBean("brokenBean") } throws RuntimeException("Cannot instantiate")
 
-        val metrics = service.getMetrics()
+        val tools = service.getRegisteredTools()
 
-        assertEquals(0, metrics.cpuLoad)
+        assertEquals(listOf(ToolInfo("sampleTool", "Sample description")), tools)
     }
 }

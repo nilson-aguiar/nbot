@@ -1,7 +1,8 @@
 package dev.naguiar.nbot.presentation.web
 
 import dev.naguiar.nbot.application.web.DashboardDataService
-import dev.naguiar.nbot.application.web.MetricsInfo
+import dev.naguiar.nbot.application.web.HomepageData
+import dev.naguiar.nbot.application.web.HomepageService
 import dev.naguiar.nbot.infrastructure.logging.SseLogEmitterService
 import io.mockk.every
 import io.mockk.mockk
@@ -15,10 +16,12 @@ import org.springframework.web.servlet.view.InternalResourceViewResolver
 
 class DashboardControllerTest {
     private val dataService = mockk<DashboardDataService>()
+    private val homepageService = mockk<HomepageService>()
     private val logEmitterService = mockk<SseLogEmitterService>(relaxed = true)
     private val controller =
         DashboardController(
             dataService,
+            homepageService,
             logEmitterService,
         )
     private val mockMvc =
@@ -34,24 +37,13 @@ class DashboardControllerTest {
     @Test
     fun `should return dashboard view`() {
         every { dataService.getRegisteredTools() } returns emptyList()
-        every { dataService.getMetrics() } returns MetricsInfo(10, 300)
+        every { homepageService.getHomepageData("localhost") } returns HomepageData(emptyList(), 0)
 
         mockMvc
             .perform(get("/dashboard"))
             .andExpect(status().isOk)
             .andExpect(view().name("dashboard"))
-            .andExpect(model().attributeExists("tools", "metrics"))
-    }
-
-    @Test
-    fun `should return metrics fragment`() {
-        every { dataService.getMetrics() } returns MetricsInfo(10, 300)
-
-        mockMvc
-            .perform(get("/dashboard/metrics"))
-            .andExpect(status().isOk)
-            .andExpect(view().name("fragments/metrics :: metrics"))
-            .andExpect(model().attributeExists("metrics"))
+            .andExpect(model().attributeExists("tools", "homepage"))
     }
 
     @Test
