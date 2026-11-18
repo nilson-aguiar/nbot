@@ -30,13 +30,13 @@ class IndexController(
         model.addAttribute("homepage", homepageService.getHomepageData(requestHost, forceRefresh = true))
         return "fragments/homepage-services :: services"
     }
-
-    private fun resolveRequestHost(request: HttpServletRequest): String =
-        request
-            .getHeader("X-Forwarded-Host")
-            ?.split(",")
-            ?.firstOrNull()
-            ?.trim()
-            ?.takeIf { it.isNotBlank() }
-            ?: request.serverName
 }
+
+internal fun resolveRequestHost(request: HttpServletRequest): String =
+    request
+        .getHeader("X-Forwarded-Host")
+        ?.split(",")
+        ?.firstOrNull()
+        ?.trim()
+        ?.takeIf { it.isNotBlank() }
+        ?: request.serverName

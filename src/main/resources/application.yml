@@ -1,14 +1,4 @@
 spring:
-  ai:
-    model:
-      chat: none
-    ollama:
-      chat:
-        enabled: false
-    google:
-      genai:
-        chat:
-          enabled: false
   application:
     name: nbot
   datasource:
@@ -60,39 +50,3 @@ management:
 logging:
   level:
       dev.naguiar: DEBUG
-
----
-spring:
-  config:
-    activate:
-      on-profile: gemini
-  ai:
-    model:
-      chat: google-genai
-    ollama:
-      chat:
-        enabled: false
-    google:
-      genai:
-        chat:
-          enabled: true
-        api-key: ${GEMINI_API_KEY:}
-
----
-spring:
-  config:
-    activate:
-      on-profile: ollama
-  ai:
-    model:
-      chat: ollama
-    google:
-      genai:
-        chat:
-          enabled: false
-    ollama:
-      chat:
-        enabled: true
-        options:
-          model: llama3.1:latest
-      base-url: ${OLLAMA_BASE_URL:http://localhost:11434}
