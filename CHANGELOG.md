@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.1](https://github.com/nilson-aguiar/nbot/compare/v1.3.0...v1.3.1) (2026-11-19)
+
+
+### Bug Fixes
+
+* add spring-boot-starter-restclient for RestClient.Builder bean ([4405bea](https://github.com/nilson-aguiar/nbot/commit/4405bea1fade2b9bfe355fab0cb5bedba7983d81))
+
 ## [1.3.0](https://github.com/nilson-aguiar/nbot/compare/v1.2.0...v1.3.0) (2026-11-19)
 
 
