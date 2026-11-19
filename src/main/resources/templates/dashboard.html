@@ -16,16 +16,6 @@
     <div class="max-w-7xl mx-auto flex gap-8">
         <!-- Sidebar -->
         <div class="w-80 flex flex-col gap-6">
-            <div class="card p-6 flex-grow">
-                <h2 class="text-sm font-semibold uppercase tracking-wider text-gray-400 mb-4">Registered Tools</h2>
-                <ul class="space-y-3">
-                    <li th:each="tool : ${tools}" class="flex items-center gap-2">
-                        <span class="w-2 h-2 bg-green-500 rounded-full"></span>
-                        <span th:text="${tool.name}" class="font-mono text-sm text-gray-300"></span>
-                    </li>
-                </ul>
-            </div>
-
             <!-- Navigation -->
             <div class="card p-6">
                 <h2 class="text-sm font-semibold uppercase tracking-wider text-gray-400 mb-4">Navigation</h2>
@@ -53,6 +43,16 @@
                            class="w-full text-left px-4 py-2 rounded text-sm hover:bg-gray-800 transition-colors flex items-center gap-2">
                            <span class="text-gray-400">📸</span> Social Schools
                         </button>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="card p-6 flex-grow">
+                <h2 class="text-sm font-semibold uppercase tracking-wider text-gray-400 mb-4">Registered Tools</h2>
+                <ul class="space-y-3">
+                    <li th:each="tool : ${tools}" class="flex items-center gap-2">
+                        <span class="w-2 h-2 bg-green-500 rounded-full"></span>
+                        <span th:text="${tool.name}" class="font-mono text-sm text-gray-300"></span>
                     </li>
                 </ul>
             </div>
