@@ -37,7 +37,7 @@ dependencies {
     implementation("org.apache.httpcomponents.client5:httpclient5")
     implementation("com.prowidesoftware:pw-iso20022:SRU2025-10.3.8")
     implementation("com.microsoft.playwright:playwright:1.65.0")
-    implementation("io.fabric8:kubernetes-client:8.0.0")
+    implementation("io.fabric8:kubernetes-client")
     developmentOnly("org.springframework.boot:spring-boot-devtools")
     runtimeOnly("io.micrometer:micrometer-registry-prometheus")
     runtimeOnly("org.postgresql:postgresql")
@@ -47,15 +47,26 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-testcontainers")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
     testImplementation("io.mockk:mockk:1.14.12")
-    testImplementation("org.testcontainers:testcontainers:2.0.5")
-    testImplementation("org.testcontainers:testcontainers-junit-jupiter:2.0.5")
-    testImplementation("org.testcontainers:testcontainers-postgresql:2.0.5")
+    testImplementation("org.testcontainers:testcontainers")
+    testImplementation("org.testcontainers:testcontainers-junit-jupiter")
+    testImplementation("org.testcontainers:testcontainers-postgresql")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
 dependencyManagement {
     imports {
         mavenBom("org.springframework.cloud:spring-cloud-dependencies:${property("springCloudVersion")}")
+    }
+}
+
+// The Spring BOM is applied to every configuration, including ktlint's isolated tool classpath.
+// It would force kotlin-compiler-embeddable to the project's Kotlin version, which ktlint's engine
+// cannot run against. Keep ktlint on the Kotlin artifacts it was built for.
+configurations.matching { it.name.startsWith("ktlint") }.configureEach {
+    resolutionStrategy.eachDependency {
+        if (requested.group == "org.jetbrains.kotlin") {
+            requested.version?.let { useVersion(it) }
+        }
     }
 }
 
@@ -93,6 +104,7 @@ tasks.jacocoTestCoverageVerification {
 }
 
 ktlint {
+    version.set("1.8.0")
     verbose.set(true)
     outputToConsole.set(true)
     coloredOutput.set(true)
