@@ -1,5 +1,7 @@
 # nbot
 
+[![Views](https://hits.sh/github.com/nilson-aguiar/nbot.svg?view=today-total&label=Views)](https://hits.sh/github.com/nilson-aguiar/nbot/)
+
 `nbot` is a Kotlin-based Spring Boot application that provides a Telegram bot interface for managing torrents, complemented by a real-time web dashboard.
 
 ## 🚀 Features
