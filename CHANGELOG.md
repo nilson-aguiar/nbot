@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.4.0](https://github.com/nilson-aguiar/nbot/compare/v1.3.1...v1.4.0) (2026-11-19)
+
+
+### Features
+
+* **dashboard:** swap navigation and registered tools order ([f0be919](https://github.com/nilson-aguiar/nbot/commit/f0be919bf4cffdc3199adc5d3795050b0bf2eeb4))
+* **dashboard:** swap navigation and registered tools order ([ec84d0f](https://github.com/nilson-aguiar/nbot/commit/ec84d0f3d6e041f931b92e310c386fde85f30e38))
+
 ## [1.3.1](https://github.com/nilson-aguiar/nbot/compare/v1.3.0...v1.3.1) (2026-11-19)
 
 
