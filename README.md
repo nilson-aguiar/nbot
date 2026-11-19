@@ -2,38 +2,24 @@
 
 [![Views](https://hits.sh/github.com/nilson-aguiar/nbot.svg?view=today-total&label=Views)](https://hits.sh/github.com/nilson-aguiar/nbot/)
 
-`nbot` is a Kotlin-based Spring Boot application that provides a Telegram bot interface for managing torrents, complemented by a real-time web dashboard.
+`nbot` is a Kotlin-based Spring Boot application that provides a Telegram/WhatsApp bot interface for managing torrents, a Kubernetes homelab homepage, CAMT.053 XML tools, and a Social Schools media downloader, complemented by an HTMX web dashboard.
 
 ## 🚀 Features
 
-- **Telegram Bot**: Handles magnet links, `.torrent` file uploads, and CAMT.053 bank statement processing.
+- **Telegram & WhatsApp Bot**: Handles magnet links and `.torrent` file uploads for authorized users.
 - **qBittorrent Integration**: Automatically forwards torrents to a configured qBittorrent instance.
-- **Budget Management**: Parse bank statements, use AI for intelligent payee mapping, and sync transactions to Actual Budget.
-- **CAMT XML Tools**: Merge multiple bank statements and apply custom IBAN/Name filters to de-duplicate or exclude transactions.
-- **Web Dashboard**: Monitor system metrics (CPU, Memory, Uptime), live execution logs, and manage pending budget drafts in real-time.
-- **Homelab Homepage**: Discovers all Traefik `IngressRoute` resources in the Kubernetes cluster and presents them at `/` grouped by namespace (see [Kubernetes RBAC setup](docs/kubernetes-rbac.md)).
+- **Homelab Homepage**: Discovers all Traefik `IngressRoute` resources in the Kubernetes cluster and presents them at `/` (and `/dashboard`) grouped by namespace (see [Kubernetes RBAC setup](docs/kubernetes-rbac.md)).
+- **CAMT XML Tools**: Merge multiple CAMT.053 bank statement XMLs from a ZIP archive and apply custom IBAN/Name filters to exclude transactions.
+- **Social Schools Downloader**: Fetch and download photo/video albums from Social Schools via Playwright.
+- **Web Dashboard**: Interactive HTMX-based interface with registered bot tools, live execution logs (SSE), CAMT tools, and Social Schools management.
 - **Containerized**: Ready for Docker and Kubernetes (Helm).
 
 ## 🛠 Tech Stack
 
-- **Backend**: Kotlin 2.x, Java 25, Spring Boot 3.5.x (following Clean Architecture principles)
-- **Frontend**: HTMX, Thymeleaf, Vanilla CSS
+- **Backend**: Kotlin 2.x, Java 25, Spring Boot 4.1.x
+- **Frontend**: HTMX, Thymeleaf, Tailwind CSS
 - **Infrastructure**: Docker, Docker Compose, Helm (Kubernetes)
 - **CI/CD**: GitHub Actions
-
-## 📍 Current State: Hybrid Assistant
-
-Currently, `nbot` operates as a **hybrid assistant**.
-- **Torrents**: Direct forwarding of magnet links and `.torrent` files to qBittorrent.
-- **Budget**: Fully functional bank statement parsing and AI-assisted syncing to Actual Budget.
-- **Dashboard**: Interactive HTMX-based interface for metrics, logs, and budget approval.
-
-## 🧠 Roadmap: AI Bot Integration
-
-The next phase of development will re-enable and expand the AI capabilities:
-- **Proactive Assistant**: Transition from deterministic rules to a Gemini-powered agent using Spring AI.
-- **Function Calling**: The LLM will use `@Tool` annotations to interact with external services (qBittorrent, search engines, etc.).
-- **Natural Language Control**: Users will be able to query torrent status, search for content, and manage their download queue using natural language.
 
 ## 💻 Local Development
 
@@ -44,7 +30,7 @@ The next phase of development will re-enable and expand the AI capabilities:
 ### Running Locally
 1. Clone the repository.
 2. Configure your environment variables in a `.env` file (see `.env.example`).
-3. Start the infrastructure (e.g., qBittorrent) using Docker Compose:
+3. Start the infrastructure (PostgreSQL, qBittorrent) using Docker Compose:
    ```bash
    docker-compose up -d
    ```
@@ -52,7 +38,7 @@ The next phase of development will re-enable and expand the AI capabilities:
    ```bash
    ./gradlew bootRun
    ```
-5. Access the dashboard at `http://localhost:8080/dashboard`.
+5. Access the homepage at `http://localhost:8080/` and the dashboard at `http://localhost:8080/dashboard`.
 
 ## 🚢 Deployment
 
