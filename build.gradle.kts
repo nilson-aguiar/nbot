@@ -36,7 +36,7 @@ dependencies {
     implementation("org.telegram:telegrambots-spring-boot-starter:6.9.7.1")
     implementation("org.apache.httpcomponents.client5:httpclient5")
     implementation("com.prowidesoftware:pw-iso20022:SRU2025-10.3.8")
-    implementation("com.microsoft.playwright:playwright:1.65.0")
+    implementation("com.microsoft.playwright:playwright:1.65.1")
     implementation("io.fabric8:kubernetes-client")
     developmentOnly("org.springframework.boot:spring-boot-devtools")
     runtimeOnly("io.micrometer:micrometer-registry-prometheus")
