@@ -1,0 +1,10 @@
+.git
+.github
+.gradle
+.idea
+.docker_data
+docs
+*.md
+build/*
+!build/libs/
+build/libs/*-plain.jar
