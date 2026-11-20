@@ -123,6 +123,10 @@ tasks.check {
     dependsOn(tasks.jacocoTestCoverageVerification)
 }
 
+tasks.jar {
+    enabled = false
+}
+
 tasks.bootJar {
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
