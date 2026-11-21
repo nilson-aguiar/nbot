@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 ARG BUILD_STAGE=builder
 
-FROM --platform=$BUILDPLATFORM eclipse-temurin:25.0.5_8-jdk-alpine AS builder
+FROM --platform=$BUILDPLATFORM eclipse-temurin:25.0.5.1_2-jdk-alpine AS builder
 WORKDIR /app
 COPY gradlew .
 COPY gradle gradle
@@ -15,7 +15,7 @@ COPY build/libs/*.jar /app/build/libs/
 FROM ${BUILD_STAGE} AS jar-source
 
 FROM mcr.microsoft.com/playwright/java:v1.65.1-noble
-COPY --from=eclipse-temurin:25.0.5_8-jre /opt/java/openjdk /opt/java/openjdk
+COPY --from=eclipse-temurin:25.0.5.1_2-jre /opt/java/openjdk /opt/java/openjdk
 ENV JAVA_HOME=/opt/java/openjdk
 ENV PATH="${JAVA_HOME}/bin:${PATH}"
 WORKDIR /app
